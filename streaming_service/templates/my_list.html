@@ -21,17 +21,33 @@
         <nav class="flex space-x-5">
             <span><a href="/">Home</a></span>
             
-            <div class="dropdown">
-                <span id="dropdownMenuButton" class="cursor-pointer">Genres ▼</span>
+            <div class="dropdown relative">
+                <button 
+                    id="dropdownMenuButton" 
+                    class="flex items-center space-x-1 hover:text-gray-300 focus:outline-none"
+                    aria-expanded="false"
+                    aria-haspopup="true"
+                >
+                    <span>Genres</span>
+                    <svg class="w-4 h-4 transition-transform duration-200" id="dropdownArrow" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
                 
-                <div id="dropdownMenu" class="dropdown-content hidden">
-                    <ul><a href="/genre/action/">Action</a></ul>
-                    <ul><a href="/genre/comedy/">Comedy</a></ul>
-                    <ul><a href="/genre/drama/">Drama</a></ul>
-                    <ul><a href="/genre/horror/">Horror</a></ul>
-                    <ul><a href="/genre/romance/">Romance</a></ul>
-                    <ul><a href="/genre/sciencefiction/">Science Fiction</a></ul>
-                    <ul><a href="/genre/fantasy/">Fantasy</a></ul>
+                <div 
+                    id="dropdownMenu" 
+                    class="hidden absolute left-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-50"
+                    role="menu"
+                    aria-orientation="vertical"
+                    aria-labelledby="dropdownMenuButton"
+                >
+                    <a href="/genre/action/" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Action</a>
+                    <a href="/genre/comedy/" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Comedy</a>
+                    <a href="/genre/drama/" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Drama</a>
+                    <a href="/genre/horror/" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Horror</a>
+                    <a href="/genre/romance/" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Romance</a>
+                    <a href="/genre/sciencefiction/" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Science Fiction</a>
+                    <a href="/genre/fantasy/" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Fantasy</a>
                 </div>
             </div>
 
@@ -82,7 +98,7 @@
    
 
     <!-- Modal -->
-    <div class="modal" id="movieModal">
+    {% comment %} <div class="modal" id="movieModal">
         <div class="modal-content">
             <div class="flex justify-between">
                 <h2 class="text-xl mb-5">Movie Title</h2>
@@ -103,7 +119,7 @@
                 </button>
             </div>
         </div>
-    </div>
+    </div> {% endcomment %}
 
     <script>
         function showModal(element) {
@@ -174,6 +190,66 @@
                 }
             });
         }
+
+        // Dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const dropdownButton = document.getElementById('dropdownMenuButton');
+            const dropdownMenu = document.getElementById('dropdownMenu');
+            const dropdownArrow = document.getElementById('dropdownArrow');
+            
+            if (dropdownButton && dropdownMenu) {
+                // Toggle dropdown on button click
+                dropdownButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const isHidden = dropdownMenu.classList.contains('hidden');
+                    
+                    // Toggle menu
+                    dropdownMenu.classList.toggle('hidden');
+                    
+                    // Update ARIA attribute
+                    dropdownButton.setAttribute('aria-expanded', !isHidden);
+                    
+                    // Rotate arrow
+                    if (dropdownArrow) {
+                        dropdownArrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+                    }
+                });
+                
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (!dropdownButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
+                        dropdownMenu.classList.add('hidden');
+                        dropdownButton.setAttribute('aria-expanded', 'false');
+                        
+                        // Reset arrow
+                        if (dropdownArrow) {
+                            dropdownArrow.style.transform = 'rotate(0deg)';
+                        }
+                    }
+                });
+                
+                // Close dropdown on escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && !dropdownMenu.classList.contains('hidden')) {
+                        dropdownMenu.classList.add('hidden');
+                        dropdownButton.setAttribute('aria-expanded', 'false');
+                        
+                        // Reset arrow
+                        if (dropdownArrow) {
+                            dropdownArrow.style.transform = 'rotate(0deg)';
+                        }
+                        
+                        // Return focus to button
+                        dropdownButton.focus();
+                    }
+                });
+                
+                // Prevent menu from closing when clicking inside
+                dropdownMenu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+        });
     </script>
 </body>
 
