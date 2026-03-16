@@ -1,256 +1,77 @@
-{% load static %}
+{% extends 'base.html' %}
 
-<!DOCTYPE html>
-<html lang="en">
+{% block title %}{{ movie_genre }} - Netflix Clone{% endblock %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Netflix Clone</title>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="{% static 'assets/style.css' %}" />
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-   
-</head>
-
-<body class="text-white" style="background-color: #141414;">
-    <header class="p-5 flex justify-between items-center">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png" height="30" alt="Netflix Logo" width="110">
-        
-        
-        <nav class="flex space-x-5">
-            <span><a href="/">Home</a></span>
-            
-            <div class="dropdown relative">
-                <button 
-                    id="dropdownMenuButton" 
-                    class="flex items-center space-x-1 hover:text-gray-300 focus:outline-none"
-                    aria-expanded="false"
-                    aria-haspopup="true"
-                >
-                    <span>Genres</span>
-                    <svg class="w-4 h-4 transition-transform duration-200" id="dropdownArrow" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                    </svg>
-                </button>
-                
-                <div 
-                    id="dropdownMenu" 
-                    class="hidden absolute left-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-50"
-                    role="menu"
-                    aria-orientation="vertical"
-                    aria-labelledby="dropdownMenuButton"
-                >
-                    <a href="/genre/action/" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Action</a>
-                    <a href="/genre/comedy/" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Comedy</a>
-                    <a href="/genre/drama/" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Drama</a>
-                    <a href="/genre/horror/" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Horror</a>
-                    <a href="/genre/romance/" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Romance</a>
-                    <a href="/genre/sciencefiction/" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Science Fiction</a>
-                    <a href="/genre/fantasy/" class="block px-4 py-2 text-sm hover:bg-gray-700" role="menuitem">Fantasy</a>
-                </div>
-            </div>
-
-            <span><a href="/my-list">My List</a></span>
-        </nav>
-
-
-        <div class="flex space-x-5 items-center">
-            <form action="search" method="POST">
-                {% csrf_token %}
-                <input type="search" name="search_term" placeholder="Search" class="bg-gray-700 p-2 rounded">
-                <button class="bg-red-600 text-white p-2 rounded hover:bg-red-500">Search</button>
-            </form>
-            <div class="relative">
-                <a href="#" class="block p-2">Welcome, {{user.username}}</a>
-                <a href="/logout" class="block p-2">Logout</a>
-            </div>
-        </div>
-    </header>
-    
-    <hr>
+{% block content %}
 
     <section class="py-10 px-5">
-    
-        <div align="center">
-            <h2 class="text-xl mb-5">
-                '{{ movie_genre | title }}' Films
-            </h2>
-        </div>
-        <div class="flex space-x-5 overflow-x-auto">
+        <h2 class="text-3xl font-bold mb-8 text-center">
+            '{{ movie_genre }}' Films
+        </h2>
 
+        <div class="flex flex-wrap gap-6 justify-center">
             {% for movie in movies %}
-            <div class="w-40 h-64 flex-shrink-0 film-card"
-                onclick="showModal(this)" 
-                data-title="{{ movie.title }}"
-                data-description="{{ movie.description }}"
-                data-release-date="{{ movie.release_date|date:'Y' }}"
-                data-genre="{{ movie.get_genre_display }}" 
-                data-length="{{ movie.length }}"
-                data-image-card-url="{{ movie.image_card.url }}"
-                data-image-cover-url="{{ movie.image_cover.url }}"
-                data-video-url="/movie/{{ movie.uu_id }}"
-                style="background-image: url('{{movie.image_card.url}}'); background-size: cover; background-position: center;">
-            </div>
+                <div class="w-40 md:w-48 cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg"
+                     data-slug="{{ movie.slug }}"
+                     data-title="{{ movie.title|escapejs }}"
+                     data-description="{{ movie.overview|escapejs|truncatewords:60 }}"
+                     data-year="{{ movie.release_date.year|default:'N/A' }}"
+                     data-genre="{{ movie_genre|escapejs }}"
+                     data-poster="{{ movie.poster_url }}"
+                     data-backdrop="{{ movie.backdrop_url }}"
+                     data-play-url="{% url 'movie_detail' movie.slug %}"
+                     onclick="showModal(this)"
+                     style="background-image: url('{{ movie.poster_url }}'); 
+                            background-size: cover; 
+                            background-position: center; 
+                            height: 240px;">
+                    <div class="w-full h-full bg-gradient-to-t from-black/70 to-transparent flex items-end p-3">
+                        <p class="text-white text-sm font-semibold truncate">
+                            {{ movie.title }}
+                        </p>
+                    </div>
+                </div>
+            {% empty %}
+                <p class="text-gray-400 text-center text-xl">
+                    No hay películas en el género '{{ movie_genre }}' por ahora.
+                </p>
             {% endfor %}
-    </section>
-    
-   
-
-    {% comment %} <!-- Modal -->
-    <div class="modal" id="movieModal">
-        <div class="modal-content">
-            <div class="flex justify-between">
-                <h2 class="text-xl mb-5">Movie Title</h2>
-                <button onclick="hideModal()">X</button>
-            </div>
-            <img width="1000" height="100" src="https://bloximages.newyork1.vip.townnews.com/newsrecord.org/content/tncms/assets/v3/editorial/8/1e/81ea500c-45ac-11ee-a11e-a7402910a7e7/64ecaae69243a.image.jpg" alt="Movie Image" class=" mb-5">
-            <div class="flex justify-between mb-5">
-                <span>Year: 2023</span>
-                <span>Length: 2h 15min</span>
-            </div>
-            <p class="mb-5">Detailed information about the movie.</p>
-            <div class="flex space-x-4 mb-5">
-                <a href="movie.html">
-                    <button class="bg-red-600 text-white p-2 px-5 rounded hover:bg-red-500">Play</button>
-                </a>
-                <button id="addToListButton" onclick="addItemToList()" class="border border-white text-white p-2 px-5 rounded hover:bg-gray-700">
-                    Add to List
-                </button>
-            </div>
         </div>
-    </div> {% endcomment %}
 
-    <script>
-        function showModal(element) {
-            // Retrieve data attributes
-            const title = element.getAttribute('data-title');
-            const description = element.getAttribute('data-description');
-            const releaseDate = element.getAttribute('data-release-date');
-            const genre = element.getAttribute('data-genre');
-            const length = element.getAttribute('data-length');
-            const imageCardUrl = element.getAttribute('data-image-card-url');
-            const imageCoverUrl = element.getAttribute('data-image-cover-url');
-            const dataVideoUrl = element.getAttribute('data-video-url');
-        
-            // Update the modal's content with the movie details
-            const modal = document.getElementById('movieModal');
-            modal.querySelector('.modal-content h2').textContent = title;
-            modal.querySelector('.modal-content img').src = imageCoverUrl;
-            modal.querySelector('.modal-content a').href = dataVideoUrl;  
-            modal.querySelector('.modal-content img').alt = title + " Cover Image";
-            modal.querySelector('.modal-content .flex span:first-child').textContent = "Year: " + releaseDate;
-            modal.querySelector('.modal-content .flex span:nth-child(2)').textContent = "Genre: " + genre;
-            modal.querySelector('.modal-content .flex span:last-child').textContent = "Length: " + length + "min";
-            modal.querySelector('.modal-content p').textContent = description;
-        
-            // Show the modal
-            modal.style.display = 'block';
-            setTimeout(() => {
-                modal.classList.add('modal-show');
-            }, 50);
-        }
-        
-        function hideModal() {
-            const modal = document.querySelector('.modal');
-            modal.classList.remove('modal-show');
-            setTimeout(() => {
-                modal.style.display = 'none';
-            }, 300);
-        }
-        
+        {% if is_paginated %}
+            <div class="flex justify-center mt-10">
+                <nav aria-label="Page navigation">
+                    <ul class="inline-flex items-center -space-x-px">
+                        {% if page_obj.has_previous %}
+                            <li>
+                                <a href="?page={{ page_obj.previous_page_number }}" 
+                                   class="px-4 py-2 bg-gray-800 text-white rounded-l hover:bg-gray-700">
+                                    Anterior
+                                </a>
+                            </li>
+                        {% endif %}
 
-        window.onclick = function(event) {
-            if (event.target === document.getElementById('movieModal')) {
-                hideModal();
-            }
-        }
+                        {% for num in page_obj.paginator.page_range %}
+                            <li>
+                                <a href="?page={{ num }}" 
+                                   class="px-4 py-2 {% if page_obj.number == num %}bg-red-600{% else %}bg-gray-800{% endif %} text-white hover:bg-gray-700">
+                                    {{ num }}
+                                </a>
+                            </li>
+                        {% endfor %}
 
-        function addItemToList() {
-            const modal = document.getElementById('movieModal')
-            var movieID = modal.querySelector('.modal-content a').href;
+                        {% if page_obj.has_next %}
+                            <li>
+                                <a href="?page={{ page_obj.next_page_number }}" 
+                                   class="px-4 py-2 bg-gray-800 text-white rounded-r hover:bg-gray-700">
+                                    Siguiente
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+        {% endif %}
+    </section>
 
-            $.ajax({
-                url: "{% url 'add-to-list' %}",
-                type: "POST",
-                data: {
-                    movie_id: movieID,
-                    csrfmiddlewaretoken: "{{ csrf_token }}"
-                },
-                success: function(data) {
-                    $('#addToListButton').text(data.message);
-
-                    $('#addToListButton').prop('disabled', true);
-
-                    console.log("Item added to list!");
-                },
-                error: function(xhr, errmsg, err) {
-                    
-                    console.error("Error adding item to list: " + errmsg);
-                }
-            });
-        }
-
-        // Dropdown functionality
-        document.addEventListener('DOMContentLoaded', function() {
-            const dropdownButton = document.getElementById('dropdownMenuButton');
-            const dropdownMenu = document.getElementById('dropdownMenu');
-            const dropdownArrow = document.getElementById('dropdownArrow');
-            
-            if (dropdownButton && dropdownMenu) {
-                // Toggle dropdown on button click
-                dropdownButton.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    const isHidden = dropdownMenu.classList.contains('hidden');
-                    
-                    // Toggle menu
-                    dropdownMenu.classList.toggle('hidden');
-                    
-                    // Update ARIA attribute
-                    dropdownButton.setAttribute('aria-expanded', !isHidden);
-                    
-                    // Rotate arrow
-                    if (dropdownArrow) {
-                        dropdownArrow.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
-                    }
-                });
-                
-                // Close dropdown when clicking outside
-                document.addEventListener('click', function(e) {
-                    if (!dropdownButton.contains(e.target) && !dropdownMenu.contains(e.target)) {
-                        dropdownMenu.classList.add('hidden');
-                        dropdownButton.setAttribute('aria-expanded', 'false');
-                        
-                        // Reset arrow
-                        if (dropdownArrow) {
-                            dropdownArrow.style.transform = 'rotate(0deg)';
-                        }
-                    }
-                });
-                
-                // Close dropdown on escape key
-                document.addEventListener('keydown', function(e) {
-                    if (e.key === 'Escape' && !dropdownMenu.classList.contains('hidden')) {
-                        dropdownMenu.classList.add('hidden');
-                        dropdownButton.setAttribute('aria-expanded', 'false');
-                        
-                        // Reset arrow
-                        if (dropdownArrow) {
-                            dropdownArrow.style.transform = 'rotate(0deg)';
-                        }
-                        
-                        // Return focus to button
-                        dropdownButton.focus();
-                    }
-                });
-                
-                // Prevent menu from closing when clicking inside
-                dropdownMenu.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                });
-            }
-        });
-    </script>
-</body>
-
-</html>
+{% endblock %}

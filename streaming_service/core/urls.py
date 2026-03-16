@@ -2,13 +2,15 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.index, name='index'),
-    path('login', views.login, name='login'),
-    path('signup', views.signup, name='signup'),
-    path('logout', views.logout, name='logout'),
-    path('movie/<str:pk>/', views.movie, name='movie'),
-    path('genre/<str:pk>/', views.genre, name='genre'),
-    #path('my-list', views.my_list, name='my-list'),
-    #path('add-to-list', views.add_to_list, name='add-to-list'),
-    path('search', views.search, name='search'),
+    path('', views.HomeView.as_view(), name='home'),
+    path('login/', views.LoginView.as_view(), name='login'),
+    path('signup/', views.SignupView.as_view(), name='signup'),
+    path('logout/', views.LogoutView.as_view(), name='logout'),
+    
+    path('movie/<slug:slug>/', views.MovieDetailView.as_view(), name='movie_detail'),
+    path('popular/', views.PopularMoviesView.as_view(), name='popular_all'),
+    path('genre/<str:genre>/', views.GenreListView.as_view(), name='genre'),
+    path('search/', views.SearchView.as_view(), name='search'),
+    path('my_list', views.MyListView.as_view(), name='my_list'),
+    path('toggle_favorite/', views.ToggleFavoriteView.as_view(), name='toggle_favorite'),
 ]

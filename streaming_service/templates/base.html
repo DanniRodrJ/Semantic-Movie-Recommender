@@ -1,0 +1,159 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Netflix Clone{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'assets/style.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/login.css' %}">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="text-white" style="background-color: #141414;">
+
+    <header class="p-5 flex justify-between items-center">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png" 
+             height="30" alt="Netflix Logo" width="110">
+
+        <nav class="flex space-x-5">
+            <span><a href="{% url 'home' %}">Home</a></span>
+
+            <div class="dropdown relative">
+                <button id="dropdownMenuButton" 
+                        class="flex items-center space-x-1 hover:text-gray-300 focus:outline-none"
+                        aria-expanded="false" aria-haspopup="true">
+                    <span>Genres</span>
+                    <svg class="w-4 h-4 transition-transform duration-200" id="dropdownArrow" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+
+                <div id="dropdownMenu" class="hidden absolute left-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-50" role="menu">
+                    <a href="{% url 'genre' 'Action' %}" class="block px-4 py-2 text-sm hover:bg-gray-700">Action</a>
+                    <a href="{% url 'genre' 'Comedy' %}" class="block px-4 py-2 text-sm hover:bg-gray-700">Comedy</a>
+                    <a href="{% url 'genre' 'Drama' %}" class="block px-4 py-2 text-sm hover:bg-gray-700">Drama</a>
+                    <a href="{% url 'genre' 'Horror' %}" class="block px-4 py-2 text-sm hover:bg-gray-700">Horror</a>
+                    <a href="{% url 'genre' 'Romance' %}" class="block px-4 py-2 text-sm hover:bg-gray-700">Romance</a>
+                    <a href="{% url 'genre' 'Science Fiction' %}" class="block px-4 py-2 text-sm hover:bg-gray-700">Science Fiction</a>
+                    <a href="{% url 'genre' 'Fantasy' %}" class="block px-4 py-2 text-sm hover:bg-gray-700">Fantasy</a>
+                </div>
+            </div>
+
+            <span><a href="{% url 'my_list' %}">My List</a></span>
+        </nav>
+
+        <div class="flex space-x-5 items-center">
+            <form action="{% url 'search' %}" method="GET">
+                <input type="search" name="q" placeholder="Search" class="bg-gray-700 p-2 rounded">
+                <button type="submit" class="bg-red-600 text-white p-2 rounded hover:bg-red-500">Search</button>
+            </form>
+
+            <div class="relative">
+                <span>Welcome, {{ user.username }}</span>
+                <a href="{% url 'logout' %}" class="block p-2 text-sm hover:text-gray-300">Logout</a>
+            </div>
+        </div>
+    </header>
+
+    <hr>
+
+    {% block content %}{% endblock %}
+
+    <div id="movieModal" class="modal hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
+        <div class="modal-content bg-gray-900 rounded-lg p-6 max-w-3xl w-full mx-4 relative">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="modalTitle" class="text-2xl font-bold"></h2>
+                <button onclick="hideModal()" class="text-white text-3xl hover:text-gray-300">&times;</button>
+            </div>
+
+            <img id="modalImage" class="w-full h-64 object-cover rounded-lg mb-4" src="" alt="Movie Cover">
+
+            <div class="flex justify-between mb-4 text-gray-300">
+                <span id="modalYear"></span>
+                <span id="modalGenre"></span>
+                <span id="modalLength"></span>
+            </div>
+
+            <p id="modalDescription" class="mb-6 text-gray-300"></p>
+
+            <div class="flex space-x-4 mb-6">
+                <a id="modalPlayLink" href="#">
+                    <button class="bg-red-600 text-white px-6 py-3 rounded hover:bg-red-700">Play</button>
+                </a>
+                <button id="addToListButton" class="border border-white text-white px-6 py-3 rounded hover:bg-gray-700">
+                    + My List
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showModal(element) {
+            const slug = element.dataset.slug;
+            const title = element.dataset.title;
+            const description = element.dataset.description;
+            const year = element.dataset.year;
+            const genre = element.dataset.genre || 'N/A';
+            const poster = element.dataset.poster;
+            const backdrop = element.dataset.backdrop;
+            const playUrl = element.dataset.playUrl;
+
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalImage').src = backdrop || poster;
+            document.getElementById('modalYear').textContent = 'Year: ' + (year || 'N/A');
+            document.getElementById('modalGenre').textContent = 'Genre: ' + genre;
+            document.getElementById('modalLength').textContent = '';
+            document.getElementById('modalDescription').textContent = description;
+            document.getElementById('modalPlayLink').href = playUrl;
+
+            document.getElementById('addToListButton').dataset.slug = slug;
+
+            document.getElementById('movieModal').classList.remove('hidden');
+        }
+
+        function hideModal() {
+            document.getElementById('movieModal').classList.add('hidden');
+        }
+
+        window.onclick = function(event) {
+            if (event.target.id === 'movieModal') hideModal();
+        }
+
+        document.getElementById('addToListButton')?.addEventListener('click', function() {
+            const slug = this.dataset.slug;
+            if (!slug) return;
+
+            $.ajax({
+                url: "{% url 'toggle_favorite' %}",
+                type: "POST",
+                data: {
+                    movie_slug: slug,
+                    csrfmiddlewaretoken: "{{ csrf_token }}"
+                },
+                success: function(data) {
+                    const btn = $('#addToListButton');
+                    if (data.status === 'added') {
+                        btn.text('✓ In My List');
+                        btn.addClass('bg-green-600 border-green-600');
+                    } else {
+                        btn.text('+ My List');
+                        btn.removeClass('bg-green-600 border-green-600');
+                    }
+                },
+                error: function() {
+                    alert('Error al actualizar favoritos');
+                }
+            });
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
