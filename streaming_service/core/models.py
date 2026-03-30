@@ -1,5 +1,6 @@
 import uuid
 from django.db import models
+from pgvector.django import VectorField
 from django.utils.dateparse import parse_date
 from django.utils.text import slugify
 from django.conf import settings
@@ -43,6 +44,7 @@ class Movie(models.Model):
         blank=True,
         verbose_name="Actores"
     )
+    embedding = VectorField(dimensions=768, null=True, blank=True)
 
     def __str__(self):
         return self.title

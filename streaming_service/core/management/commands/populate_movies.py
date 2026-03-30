@@ -4,6 +4,7 @@ import time
 from dotenv import load_dotenv
 from django.core.management.base import BaseCommand
 from core.models import Movie, Actor
+from core.services import generate_multimodal_embedding
 
 load_dotenv()
 
@@ -104,6 +105,17 @@ class Command(BaseCommand):
                         elif not video_url:
                             key = video.get('key')
                             video_url = f"https://www.youtube.com/embed/{key}"
+                            
+                existing_movie = Movie.objects.filter(tmdb_id=tmdb_id).first()
+                
+                if existing_movie and existing_movie.embedding is not None:
+                    self.stdout.write(self.style.NOTICE(f'Omitiendo Gemini para: {title} (Vector ya existe)'))
+                    vector = existing_movie.embedding
+                else:            
+                    self.stdout.write(f'Generando vector multimodal para: {title}...')
+                    full_poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
+                    vector = generate_multimodal_embedding(overview, full_poster_url)
+                    time.sleep(2)
 
                 # Guardar o actualizar
                 movie, created = Movie.objects.update_or_create(
@@ -119,6 +131,7 @@ class Command(BaseCommand):
                         'popularity': popularity,
                         'video_url': video_url,
                         'is_available': False,  # por ahora manual
+                        'embedding': vector,
                     }
                 )
                 
