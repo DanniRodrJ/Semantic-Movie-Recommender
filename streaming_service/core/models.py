@@ -5,8 +5,6 @@ from django.utils.dateparse import parse_date
 from django.utils.text import slugify
 from django.conf import settings
 
-# Create your models here.
-
 class Actor(models.Model):
     name = models.CharField(max_length=255, db_index=True)
     tmdb_id = models.PositiveIntegerField(unique=True, null=True, blank=True)  # opcional, pero útil
@@ -35,16 +33,18 @@ class Movie(models.Model):
         settings.AUTH_USER_MODEL,
         related_name='favorite_movies',
         blank=True,
-        verbose_name="Usuarios que la tienen como favorita"
+        verbose_name="Users who have bookmarked it"
     )
-    is_available = models.BooleanField(default=False)
+    is_available = models.BooleanField(default=True)
     actors = models.ManyToManyField(
         Actor,                       
         related_name='movies',        
         blank=True,
         verbose_name="Actores"
     )
-    embedding = VectorField(dimensions=768, null=True, blank=True)
+    director = models.CharField(max_length=255, null=True, blank=True)
+    embedding = VectorField(dimensions=768, null=True, blank=True)  # The film's multimodal approach
+    embedding_tokens = models.IntegerField(default=0, help_text="Tokens spent on Gemini", null=True, blank=True)
 
     def __str__(self):
         return self.title
@@ -93,3 +93,54 @@ class Movie(models.Model):
         ordering = ['-popularity', '-vote_average', 'title']
         
         
+class UserProfile(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
+    preference_vector = VectorField(dimensions=768, null=True, blank=True)
+    preference_tokens = models.IntegerField(default=0, help_text="Tokens spent on Gemini")
+    has_completed_onboarding = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"Profile of {self.user.username}"
+
+    def update_preference_vector(self):
+        """Calculate the centroid by combining Favorites (weight 3) and History (weight 1)"""
+        vectors = []
+        weights = []
+
+        # 1. Favorites
+        fav_movies = self.user.favorite_movies.filter(embedding__isnull=False)
+        fav_ids = set()
+        for movie in fav_movies:
+            vectors.append(np.array(movie.embedding))
+            weights.append(3.0) # Peso triple
+            fav_ids.add(movie.id)
+
+        # 2. History (limit to the last 50 to not drag old tastes)
+        history = WatchHistory.objects.filter(
+            user=self.user, 
+            movie__embedding__isnull=False
+        ).select_related('movie').order_by('-watched_at')[:50]
+
+        for item in history:
+            # Only add if not in favorites (to avoid duplicate calculations)
+            if item.movie.id not in fav_ids:
+                vectors.append(np.array(item.movie.embedding))
+                weights.append(1.0) # Normal weight
+
+        # 3. Vector math
+        if vectors:
+            centroid = np.average(vectors, weights=weights, axis=0)
+            self.preference_vector = centroid.tolist()
+        else:
+            self.preference_vector = None
+            
+        self.save()
+
+
+class WatchHistory(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE)
+    watched_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-watched_at']

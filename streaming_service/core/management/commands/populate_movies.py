@@ -35,10 +35,10 @@ class Command(BaseCommand):
         language = options['language']
         base_url = "https://api.themoviedb.org/3"
 
-        self.stdout.write(self.style.SUCCESS(f'Iniciando populate: {pages} páginas en {language}'))
+        self.stdout.write(self.style.SUCCESS(f'Loading: {pages} pages in {language}'))
 
         for page in range(1, pages + 1):
-            # 1. Obtener películas populares
+            # 1. Get popular movies
             discover_url = f"{base_url}/discover/movie"
             params = {
                 'api_key': api_key,
@@ -58,7 +58,7 @@ class Command(BaseCommand):
             for movie_data in movies:
                 tmdb_id = movie_data['id']
 
-                # 2. Obtener detalles + credits
+                # 2. Get details + credits
                 details_url = f"{base_url}/movie/{tmdb_id}"
                 details_params = {
                     'api_key': api_key,
@@ -72,36 +72,33 @@ class Command(BaseCommand):
 
                 details = details_resp.json()
 
-                # Extraer datos
                 title = details.get('title', '')
                 overview = details.get('overview', '')
                 release_date = details.get('release_date') or None
                 poster_path = details.get('poster_path', '')
                 backdrop_path = details.get('backdrop_path', '')
-                genres = details.get('genres', [])  # lista de dicts
+                genres = details.get('genres', [])  
                 vote_average = details.get('vote_average', 0.0)
                 popularity = details.get('popularity', 0.0)
-
-                # Credits
                 credits = details.get('credits', {})
                 director = ''
                 for crew in credits.get('crew', []):
                     if crew.get('job') == 'Director':
                         director = crew.get('name', '')
                         break
-
-                #actors = [cast['name'] for cast in credits.get('cast', [])[:5]]
-                
+                genres_ = ", ".join([g.get('name', '') for g in genres])
+                actors_ = ", ".join([cast['name'] for cast in credits.get('cast', [])[:5]])
+               
+                rich_text = f'Title: {title}. Genres: {genres_}. Actors: {actors_}. Director: {director}. Overview: {overview}.'
+        
                 videos = details.get('videos', {}).get('results', [])
                 video_url = None
                 for video in videos:
                     if video.get('site') == 'YouTube' and video.get('type') == 'Trailer':
-                        # Prioriza oficial si existe
                         if video.get('official'):
                             key = video.get('key')
                             video_url = f"https://www.youtube.com/embed/{key}"
                             break
-                        # O el primero que encuentres
                         elif not video_url:
                             key = video.get('key')
                             video_url = f"https://www.youtube.com/embed/{key}"
@@ -111,18 +108,28 @@ class Command(BaseCommand):
                 if existing_movie and existing_movie.embedding is not None:
                     self.stdout.write(self.style.NOTICE(f'Omitiendo Gemini para: {title} (Vector ya existe)'))
                     vector = existing_movie.embedding
+                    tokens_used = existing_movie.embedding_tokens
                 else:            
                     self.stdout.write(f'Generando vector multimodal para: {title}...')
                     full_poster_url = f"https://image.tmdb.org/t/p/w500{poster_path}" if poster_path else None
-                    vector = generate_multimodal_embedding(overview, full_poster_url)
+                    
+                    try:
+                        vector, tokens_used = generate_multimodal_embedding(rich_text, full_poster_url)
+                        time.sleep(2)
+                    except ValueError as e:
+                        if "QUOTA_REACHED" in str(e):
+                            self.stdout.write(self.style.ERROR('\n🚨 API LIMIT REACHED 🚨\nThe previous movies were saved successfully.'))
+                            import sys
+                            sys.exit(0)
+
                     time.sleep(2)
 
-                # Guardar o actualizar
                 movie, created = Movie.objects.update_or_create(
                     tmdb_id=tmdb_id,
                     defaults={
                         'title': title,
                         'overview': overview,
+                        'director': director,
                         'release_date': release_date,
                         'poster_path': poster_path,
                         'backdrop_path': backdrop_path,
@@ -130,8 +137,8 @@ class Command(BaseCommand):
                         'vote_average': vote_average,
                         'popularity': popularity,
                         'video_url': video_url,
-                        'is_available': False,  # por ahora manual
                         'embedding': vector,
+                        'embedding_tokens': tokens_used if vector is not None else 0,
                     }
                 )
                 
@@ -140,8 +147,7 @@ class Command(BaseCommand):
                     if not actor_name:
                         continue
 
-                    actor_tmdb_id = cast.get('id')  # TMDB ID del actor
-
+                    actor_tmdb_id = cast.get('id') 
                     actor, _ = Actor.objects.get_or_create(
                         name=actor_name,
                         defaults={
@@ -150,14 +156,13 @@ class Command(BaseCommand):
                             'popularity': cast.get('popularity', 0.0),
                         }
                     )
-
                     movie.actors.add(actor)
 
                 if created:
-                    self.stdout.write(self.style.SUCCESS(f'Creada: {title} (ID: {tmdb_id})'))
+                    self.stdout.write(self.style.SUCCESS(f'Created: {title} (ID: {tmdb_id})'))
                 else:
-                    self.stdout.write(self.style.WARNING(f'Actualizada: {title}'))
+                    self.stdout.write(self.style.WARNING(f'Updated: {title}'))
 
                 time.sleep(0.35) 
 
-        self.stdout.write(self.style.SUCCESS('Populate completado!'))
+        self.stdout.write(self.style.SUCCESS('Population completed!'))

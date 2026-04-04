@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+
+{% block header %}
+<div class="p-5 flex justify-center bg-black">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png" height="30" alt="Netflix Logo"
+        width="110">
+</div>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+
+<div class="min-h-screen bg-black text-white pt-10 px-5 md:px-20">
+    <div class="max-w-6xl mx-auto text-center mb-10">
+        <h1 class="text-4xl md:text-5xl font-bold mb-4">Customize your experience</h1>
+        <p class="text-gray-400 text-lg">Select at least 3 movies (maximum 10) to train your recommender.
+        </p>
+
+        <div id="counter-badge"
+            class="mt-4 inline-block bg-red-600 px-4 py-1 rounded-full text-sm font-bold opacity-0 transition-opacity">
+            <span id="selected-count">0</span> selected
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-32" id="movie-grid">
+        {% for movie in movies %}
+        <div class="movie-card relative cursor-pointer group transition-all duration-500 transform {% if forloop.counter > 18 %}hidden reserve-movie{% endif %}"
+            data-id="{{ movie.id }}" onclick="toggleSelect(this)">
+
+            <img src="{{ movie.poster_url }}" alt="{{ movie.title }}"
+                class="rounded-lg border-4 border-transparent w-full h-full object-cover shadow-lg">
+
+            <div
+                class="absolute inset-0 bg-black/0 group-hover:bg-black/30 rounded-lg pointer-events-none transition-all">
+            </div>
+
+            <div class="check-icon absolute top-2 right-2 bg-red-600 rounded-full p-1 opacity-0 transition-opacity">
+                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div
+        class="fixed bottom-0 left-0 w-full bg-gradient-to-t from-black via-black/90 to-transparent p-8 flex justify-center space-x-4 z-50">
+        <button onclick="skipOnboarding()"
+            class="px-8 py-3 bg-gray-800 hover:bg-gray-700 rounded-full font-bold transition">Skip for now</button>
+        <button id="btn-continue" disabled onclick="submitOnboarding()"
+            class="px-12 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-full font-bold transition">Start watching</button>
+    </div>
+</div>
+
+<style>
+    .movie-card.selected img {
+        border-color: #e50914;
+        transform: scale(0.95);
+        opacity: 0.8;
+    }
+
+    .movie-card.selected .check-icon {
+        opacity: 1;
+    }
+</style>
+
+<script>
+    let selectedIds = [];
+    const MAX_SELECTIONS = 10;
+    const MIN_SELECTIONS = 3;
+    let hideTimeouts = {};
+
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    function toggleSelect(el) {
+        const id = el.dataset.id;
+
+        if (selectedIds.includes(id)) {
+            selectedIds = selectedIds.filter(i => i !== id);
+            el.classList.remove('selected');
+            clearTimeout(hideTimeouts[id]);
+        } else {
+            if (selectedIds.length < MAX_SELECTIONS) {
+                selectedIds.push(id);
+                el.classList.add('selected');
+
+                hideTimeouts[id] = setTimeout(() => {
+                    el.style.display = 'none';
+                    showNextAvailableMovie();
+                }, 800);
+            }
+        }
+        updateUI();
+    }
+
+    function showNextAvailableMovie() {
+        // Busca la primera película en reserva y la muestra
+        const reserveMovies = document.querySelectorAll('.reserve-movie');
+        for (let i = 0; i < reserveMovies.length; i++) {
+            if (reserveMovies[i].classList.contains('hidden')) {
+                reserveMovies[i].classList.remove('hidden');
+                reserveMovies[i].style.opacity = '0';
+
+                // Efecto Fade in
+                setTimeout(() => {
+                    reserveMovies[i].style.transition = 'opacity 0.5s ease-in';
+                    reserveMovies[i].style.opacity = '1';
+                }, 50);
+                break;
+            }
+        }
+    }
+
+    function updateUI() {
+        const btn = document.getElementById('btn-continue');
+        const badge = document.getElementById('counter-badge');
+        const countSpan = document.getElementById('selected-count');
+
+        if (selectedIds.length === MAX_SELECTIONS) {
+            badge.classList.replace('bg-red-600', 'bg-green-600');
+            countSpan.innerText = "¡Máximo (10) alcanzado!";
+        } else {
+            badge.classList.replace('bg-green-600', 'bg-red-600');
+            countSpan.innerText = selectedIds.length;
+        }
+
+        badge.style.opacity = selectedIds.length > 0 ? '1' : '0';
+        btn.disabled = selectedIds.length < MIN_SELECTIONS;
+    }
+
+    async function submitOnboarding() {
+        const btn = document.getElementById('btn-continue');
+        btn.innerText = "Loading...";
+        btn.disabled = true;
+
+        const response = await fetch("{% url 'onboarding' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ action: 'submit', movie_ids: selectedIds })
+        });
+        const data = await response.json();
+        if (data.status === 'success') window.location.href = data.redirect;
+    }
+
+    async function skipOnboarding() {
+        const response = await fetch("{% url 'onboarding' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ action: 'skip' })
+        });
+        const data = await response.json();
+        if (data.status === 'success') window.location.href = data.redirect;
+    }
+</script>
+{% endblock %}
