@@ -39,6 +39,8 @@ MANIFEST
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
+logs/
+*.log
 
 # Unit test / coverage reports
 htmlcov/
@@ -176,3 +178,8 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/python
 
 notes.txt
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+*.pid

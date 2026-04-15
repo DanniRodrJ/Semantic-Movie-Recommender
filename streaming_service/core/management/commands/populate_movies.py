@@ -75,6 +75,7 @@ class Command(BaseCommand):
                 title = details.get('title', '')
                 overview = details.get('overview', '')
                 release_date = details.get('release_date') or None
+                release_year = release_date.split('-')[0] if release_date else 'Unknown'
                 poster_path = details.get('poster_path', '')
                 backdrop_path = details.get('backdrop_path', '')
                 genres = details.get('genres', [])  
@@ -89,7 +90,7 @@ class Command(BaseCommand):
                 genres_ = ", ".join([g.get('name', '') for g in genres])
                 actors_ = ", ".join([cast['name'] for cast in credits.get('cast', [])[:5]])
                
-                rich_text = f'Title: {title}. Genres: {genres_}. Actors: {actors_}. Director: {director}. Overview: {overview}.'
+                rich_text = f'Title: {title} ({release_year}). Genres: {genres_}. Actors: {actors_}. Director: {director}. Overview: {overview}.'
         
                 videos = details.get('videos', {}).get('results', [])
                 video_url = None

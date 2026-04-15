@@ -1,75 +1,51 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ movie_genre }} - Netflix Clone{% endblock %}
+{% block title %}{{ movie_genre }} Movies - Synapse{% endblock %}
 
 {% block content %}
 
-    <section class="py-10 px-5">
-        <h2 class="text-3xl font-bold mb-8 text-center">
-            '{{ movie_genre }}' Films
+    <section class="py-10 px-5 max-w-7xl mx-auto">
+        <h2 class="text-3xl font-bold mb-8 text-center flex items-center justify-center">
+            <span class="text-gray-400 mr-3">🎬</span> {{ movie_genre }} Movies
         </h2>
 
-        <div class="flex flex-wrap gap-6 justify-center">
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
             {% for movie in movies %}
-                <div class="w-40 md:w-48 cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg"
-                     data-slug="{{ movie.slug }}"
-                     data-title="{{ movie.title|escapejs }}"
-                     data-description="{{ movie.overview|escapejs|truncatewords:60 }}"
-                     data-year="{{ movie.release_date.year|default:'N/A' }}"
-                     data-genre="{{ movie_genre|escapejs }}"
-                     data-poster="{{ movie.poster_url }}"
-                     data-backdrop="{{ movie.backdrop_url }}"
-                     data-play-url="{% url 'movie_detail' movie.slug %}"
-                     onclick="showModal(this)"
-                     style="background-image: url('{{ movie.poster_url }}'); 
-                            background-size: cover; 
-                            background-position: center; 
-                            height: 240px;">
-                    <div class="w-full h-full bg-gradient-to-t from-black/70 to-transparent flex items-end p-3">
-                        <p class="text-white text-sm font-semibold truncate">
-                            {{ movie.title }}
-                        </p>
+                <div class="cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg border border-transparent hover:border-cyan-500"
+                     data-slug="{{ movie.slug }}" data-id="{{ movie.id }}" data-title="{{ movie.title|force_escape }}"
+                     data-description="{{ movie.overview|truncatewords:60|force_escape }}" data-year="{{ movie.release_date.year|default:'N/A' }}"
+                     data-genre="{{ movie_genre }}"
+                     data-poster="{{ movie.poster_url|default:'' }}" data-backdrop="{{ movie.backdrop_url|default:'' }}"
+                     data-play-url="{% url 'movie_detail' movie.slug %}" onclick="showModal(this)"
+                     style="background-image: url('{{ movie.poster_url }}'); background-size: cover; background-position: center; aspect-ratio: 2/3;">
+                    <div class="w-full h-full bg-gradient-to-t from-black/80 via-transparent to-transparent flex items-end p-3">
+                        <p class="text-white text-sm font-semibold truncate w-full">{{ movie.title }}</p>
                     </div>
                 </div>
             {% empty %}
-                <p class="text-gray-400 text-center text-xl">
-                    No hay películas en el género '{{ movie_genre }}' por ahora.
+                <p class="text-gray-400 col-span-full text-center text-xl">
+                    There are no movies in {{ movie_genre }} at the moment.
                 </p>
             {% endfor %}
         </div>
 
         {% if is_paginated %}
-            <div class="flex justify-center mt-10">
-                <nav aria-label="Page navigation">
-                    <ul class="inline-flex items-center -space-x-px">
-                        {% if page_obj.has_previous %}
-                            <li>
-                                <a href="?page={{ page_obj.previous_page_number }}" 
-                                   class="px-4 py-2 bg-gray-800 text-white rounded-l hover:bg-gray-700">
-                                    Anterior
-                                </a>
-                            </li>
-                        {% endif %}
-
-                        {% for num in page_obj.paginator.page_range %}
-                            <li>
-                                <a href="?page={{ num }}" 
-                                   class="px-4 py-2 {% if page_obj.number == num %}bg-red-600{% else %}bg-gray-800{% endif %} text-white hover:bg-gray-700">
-                                    {{ num }}
-                                </a>
-                            </li>
-                        {% endfor %}
-
-                        {% if page_obj.has_next %}
-                            <li>
-                                <a href="?page={{ page_obj.next_page_number }}" 
-                                   class="px-4 py-2 bg-gray-800 text-white rounded-r hover:bg-gray-700">
-                                    Siguiente
-                                </a>
-                            </li>
-                        {% endif %}
-                    </ul>
-                </nav>
+            <div class="flex justify-center mt-12 space-x-4">
+                {% if page_obj.has_previous %}
+                    <a href="?page={{ page_obj.previous_page_number }}" class="px-6 py-2 bg-gray-800 rounded hover:bg-gray-700 transition font-bold">
+                        Previous
+                    </a>
+                {% endif %}
+                
+                <span class="px-6 py-2 bg-cyan-600 text-white rounded font-bold shadow-lg">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+                
+                {% if page_obj.has_next %}
+                    <a href="?page={{ page_obj.next_page_number }}" class="px-6 py-2 bg-gray-800 rounded hover:bg-gray-700 transition font-bold">
+                        Next
+                    </a>
+                {% endif %}
             </div>
         {% endif %}
     </section>

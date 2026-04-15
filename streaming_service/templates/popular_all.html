@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Popular - Netflix Clone{% endblock %}
+{% block title %}{{ title }} - Synapse{% endblock %}
 
 {% block content %}
 
@@ -10,50 +10,38 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
             {% for movie in movies %}
                 <div class="cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg"
-                     data-slug="{{ movie.slug }}"
-                     data-title="{{ movie.title|escapejs }}"
-                     data-description="{{ movie.overview|escapejs|truncatewords:60 }}"
-                     data-year="{{ movie.release_date.year|default:'N/A' }}"
-                     data-genre="{% if movie.genres %}{{ movie.genres.0.name|escapejs }}{% else %}N/A{% endif %}"
-                     data-poster="{{ movie.poster_url }}"
-                     data-backdrop="{{ movie.backdrop_url }}"
-                     data-play-url="{% url 'movie_detail' movie.slug %}"
-                     onclick="showModal(this)"
-                     style="background-image: url('{{ movie.poster_url }}'); 
-                            background-size: cover; 
-                            background-position: center; 
-                            aspect-ratio: 2/3;">
+                     data-slug="{{ movie.slug }}" data-id="{{ movie.id }}" data-title="{{ movie.title }}"
+                     data-description="{{ movie.overview|truncatewords:60 }}" data-year="{{ movie.release_date.year|default:'N/A' }}"
+                     data-genre="{% if movie.genres %}{{ movie.genres.0.name }}{% else %}N/A{% endif %}"
+                     data-poster="{{ movie.poster_url|default:'' }}" data-backdrop="{{ movie.backdrop_url|default:'' }}"
+                     data-play-url="{% url 'movie_detail' movie.slug %}" onclick="showModal(this)"
+                     style="background-image: url('{{ movie.poster_url }}'); background-size: cover; background-position: center; aspect-ratio: 2/3;">
                     <div class="w-full h-full bg-gradient-to-t from-black/70 to-transparent flex items-end p-3">
-                        <p class="text-white text-sm font-semibold truncate w-full">
-                            {{ movie.title }}
-                        </p>
+                        <p class="text-white text-sm font-semibold truncate w-full">{{ movie.title }}</p>
                     </div>
                 </div>
             {% empty %}
                 <p class="text-gray-400 col-span-full text-center text-xl">
-                    No hay películas populares disponibles.
+                    No movies available at the moment.
                 </p>
             {% endfor %}
         </div>
 
-        <!-- Paginación simple (si usas paginate_by=20) -->
         {% if is_paginated %}
             <div class="flex justify-center mt-10 space-x-4">
                 {% if page_obj.has_previous %}
-                    <a href="?page={{ page_obj.previous_page_number }}" 
-                       class="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">
-                        Anterior
+                    <a href="?page={{ page_obj.previous_page_number }}" class="px-4 py-2 bg-gray-800 rounded hover:bg-gray-700 transition">
+                        Previous
                     </a>
                 {% endif %}
                 
-                <span class="px-4 py-2 bg-red-600 rounded">
-                    Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                <span class="px-4 py-2 bg-cyan-600 text-white rounded font-semibold">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
                 </span>
                 
                 {% if page_obj.has_next %}
-                    <a href="?page={{ page_obj.next_page_number }}" 
-                       class="px-4 py-2 bg-gray-700 rounded hover:bg-gray-600">
-                        Siguiente
+                    <a href="?page={{ page_obj.next_page_number }}" class="px-4 py-2 bg-gray-800 rounded hover:bg-gray-700 transition">
+                        Next
                     </a>
                 {% endif %}
             </div>

@@ -1,4 +1,6 @@
 
+import json, numpy as np
+import logging
 from django.views.generic import list, detail, base
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render, redirect
@@ -10,6 +12,9 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from pgvector.django import CosineDistance
 from .services import generate_multimodal_embedding
+from .utils import measure_hybrid_search
+
+logger = logging.getLogger(__name__)
 
 class HomeView(LoginRequiredMixin, list.ListView):
     model = Movie
@@ -29,10 +34,39 @@ class HomeView(LoginRequiredMixin, list.ListView):
         context['popular_movies']    = Movie.objects.order_by('-popularity')[:10]
         context['top_rated_movies']  = Movie.objects.order_by('-vote_average')[:10]
         context['recent_movies']     = Movie.objects.filter(release_date__isnull=False).order_by('-release_date')[:10]
-        context['featured_movie']    = Movie.objects.order_by('-popularity').first()
+        
+        if hasattr(self.request.user, 'profile') and self.request.user.profile.preference_vector is not None:
+            user_vector = self.request.user.profile.preference_vector
+            
+            qs_personalized = Movie.objects.filter(
+                embedding__isnull=False, vote_average__gte=6.5
+            ).order_by(CosineDistance('embedding', user_vector))[:3]
+            hero_personalized = [m for m in qs_personalized]
+            
+            hero_ids = [m.id for m in hero_personalized]
+            
+            qs_exploration = Movie.objects.exclude(id__in=hero_ids).order_by('?')[:2]
+            hero_exploration = [m for m in qs_exploration]
+            
+            featured_movies = []
+            if len(hero_personalized) == 3 and len(hero_exploration) == 2:
+                featured_movies = [hero_personalized[0], hero_exploration[0], hero_personalized[1], hero_exploration[1], hero_personalized[2]]
+            else:
+                featured_movies = hero_personalized + hero_exploration
+                
+            final_hero_ids = [m.id for m in featured_movies]
+            context['featured_movies'] = featured_movies
+            
+            context['personalized_movies'] = Movie.objects.filter(
+                embedding__isnull=False
+            ).exclude(id__in=final_hero_ids).order_by(
+                CosineDistance('embedding', user_vector)
+            )[:15]
+        else:
+            context['featured_movie']    = Movie.objects.order_by('-popularity').first()
 
         # Personalized recommendations
-        if hasattr(self.request.user, 'profile') and self.request.user.profile.preference_vector:
+        if hasattr(self.request.user, 'profile') and self.request.user.profile.preference_vector is not None:
             personalized = Movie.objects.filter(
                 embedding__isnull=False
             ).order_by(
@@ -48,9 +82,43 @@ class HomeView(LoginRequiredMixin, list.ListView):
                 genre_sections[genre] = movies
                 
             count = movies.count()
-            print(f"DEBUG: {genre} → {count} películas")    
+            logger.debug(f"{genre} → {count} movies found.")    
         
         context['genre_sections'] = genre_sections
+        
+        history_records = WatchHistory.objects.filter(user=self.request.user).select_related('movie').order_by('-watched_at')
+        continue_watching = []
+        seen_ids = set()
+        
+        for record in history_records:
+            if record.movie.id not in seen_ids:
+                continue_watching.append(record.movie)
+                seen_ids.add(record.movie.id)
+            if len(continue_watching) == 10: # Limit to the 10 most recent unique movies
+                break
+                
+        context['continue_watching'] = continue_watching
+        
+        return context
+    
+    
+class PersonalizedMoviesView(LoginRequiredMixin, list.ListView):
+    model = Movie
+    template_name = 'popular_all.html' 
+    context_object_name = 'movies'
+    login_url = 'login'
+    paginate_by = 20
+
+    def get_queryset(self):
+        if hasattr(self.request.user, 'profile') and self.request.user.profile.preference_vector is not None:
+            return Movie.objects.filter(embedding__isnull=False).order_by(
+                CosineDistance('embedding', self.request.user.profile.preference_vector)
+            )
+        return Movie.objects.none()
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['title'] = '✨ Recommended for you'
         return context
     
 
@@ -66,7 +134,7 @@ class PopularMoviesView(LoginRequiredMixin, list.ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Todas las películas populares'
+        context['title'] = '🔥 Most Popular Movies'
         return context
 
 
@@ -124,21 +192,14 @@ class GenreListView(LoginRequiredMixin, list.ListView):
         return context
 
 
-class SearchView(LoginRequiredMixin, list.ListView):
-    model = Movie
-    template_name = 'search.html'
-    context_object_name = 'movies'
-    login_url = 'login'
 
-    def get_queryset(self):
-        query = self.request.GET.get('q', '').strip()
-        if not query:
-            return Movie.objects.none()
-        
-        # LEXICAL SEARCH
-        lexical_results = list(Movie.objects.filter(title__icontains=query))
+@measure_hybrid_search
+def execute_rrf_search(query):
+    # LEXICAL SEARCH
+        qs_lexical = Movie.objects.filter(title__icontains=query)
+        lexical_results = [m for m in qs_lexical]
 
-        # SEMANTIC SEARCH
+        # SEMANTIC SEARCH (Embeddings)
         semantic_results = []
         vector, _ = generate_multimodal_embedding(
             text_overview=query, 
@@ -151,17 +212,43 @@ class SearchView(LoginRequiredMixin, list.ListView):
                 embedding__isnull=False
             ).order_by(
                 CosineDistance('embedding', vector)
-            )[:12]
+            )[:20]
+            semantic_results = [m for m in semantic_qs]
+            
+        # RECIPROCAL RANK FUSION (RRF) score = 1 / (k + rank)
+        rrf_scores = {}
+        k = 60
+        
+        # Score lexical results 
+        for rank, movie in enumerate(lexical_results):
+            if movie.id not in rrf_scores:
+                rrf_scores[movie.id] = {'movie': movie, 'score': 0.0}
+            rrf_scores[movie.id]['score'] += 1.0 / (k + rank + 1)
+            
+        # Score semantic results
+        for rank, movie in enumerate(semantic_results):
+            if movie.id not in rrf_scores:
+                rrf_scores[movie.id] = {'movie': movie, 'score': 0.0}
+            rrf_scores[movie.id]['score'] += 1.0 / (k + rank + 1)
 
-            semantic_results = list(semantic_qs)
+        sorted_rrf = sorted(rrf_scores.values(), key=lambda x: x['score'], reverse=True)
+        final_movies = [item['movie'] for item in sorted_rrf][:15]
+        
+        return final_movies, query
 
-        # HYBRID MERGER
-        final_movies = lexical_results.copy()
-        for movie in semantic_results:
-            if movie not in final_movies:
-                final_movies.append(movie)
+class SearchView(LoginRequiredMixin, list.ListView):
+    model = Movie
+    template_name = 'search.html'
+    context_object_name = 'movies'
+    login_url = 'login'
 
-        return final_movies
+    def get_queryset(self):
+        query = self.request.GET.get('q', '').strip()
+        if not query:
+            return Movie.objects.none()
+        
+        movies, _ = execute_rrf_search(query)
+        return movies
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -189,11 +276,11 @@ class ToggleFavoriteView(LoginRequiredMixin, base.View):
         if movie in request.user.favorite_movies.all():
             request.user.favorite_movies.remove(movie)
             status = 'removed'
-            message = 'Eliminada ✓'
+            message = 'Removed ✓'
         else:
             request.user.favorite_movies.add(movie)
             status = 'added'
-            message = 'Agregada ✓'
+            message = 'Added ✓'
 
         # Update preference vector
         if hasattr(request.user, 'profile'):
@@ -233,7 +320,7 @@ class LoginView(base.TemplateView):
             login(request, user)
             return redirect('home')
         else:
-            messages.error(request, 'Credenciales inválidas')
+            messages.error(request, 'Invalid username or password')
             return redirect('login')
 
 
@@ -247,15 +334,15 @@ class SignupView(base.TemplateView):
         password2 = request.POST.get('password2')
 
         if password != password2:
-            messages.error(request, 'Las contraseñas no coinciden')
+            messages.error(request, 'The passwords do not match')
             return redirect('signup')
 
         if models.User.objects.filter(email=email).exists():
-            messages.error(request, 'El email ya está en uso')
+            messages.error(request, 'The email is already in use')
             return redirect('signup')
 
         if models.User.objects.filter(username=username).exists():
-            messages.error(request, 'El usuario ya existe')
+            messages.error(request, 'The username is already in use')
             return redirect('signup')
 
         user = models.User.objects.create_user(username=username, email=email, password=password)

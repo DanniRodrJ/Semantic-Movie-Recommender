@@ -1,55 +1,150 @@
 {% extends 'base.html' %}
 
-{% block title %}Home - Netflix Clone{% endblock %}
+{% block title %}Home - Synapse{% endblock %}
 
 {% block content %}
 
-<!-- Featured Movie -->
-<section class="relative py-20 px-10" style="background-image: url('{{ featured_movie.backdrop_url }}'); 
-                    background-size: cover; background-position: center; min-height: 70vh;">
-    <div class="max-w-4xl">
-        <h1 class="text-5xl md:text-6xl font-bold mb-5 drop-shadow-lg">
-            {{ featured_movie.title }}
+{% if featured_movies %}
+<section id="hero-carousel" class="group relative py-20 px-10 transition-all duration-1000 ease-in-out flex flex-col justify-center" 
+         style="background-image: url('{{ featured_movies.0.backdrop_url }}'); background-size: cover; background-position: center; min-height: 70vh;">
+    <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent"></div>
+    
+    <div class="max-w-4xl relative z-10 transition-opacity duration-500" id="hero-content">
+        <span id="hero-badge" class="inline-block bg-cyan-600/80 text-white text-xs font-bold px-3 py-1 rounded-full mb-3 tracking-widest uppercase shadow-lg border border-cyan-400">
+            AI Match
+        </span>
+
+        <h1 id="hero-title" class="text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-2xl tracking-tight">
+            {{ featured_movies.0.title }}
         </h1>
-        <p class="text-lg md:text-xl mb-8 max-w-2xl drop-shadow-md">
-            {{ featured_movie.overview|truncatewords:50 }}
+        <p id="hero-overview" class="text-base md:text-lg mb-8 max-w-2xl drop-shadow-md text-gray-200">
+            {{ featured_movies.0.overview|truncatewords:40 }}
         </p>
-        <a href="{% url 'movie_detail' featured_movie.slug %}"
-            class="inline-block bg-red-600 hover:bg-red-700 text-white font-bold py-4 px-8 rounded transition">
-            ▶ Play
-        </a>
+        <div class="flex space-x-4">
+            <a id="hero-play-btn" href="{% url 'movie_detail' featured_movies.0.slug %}"
+                class="flex items-center bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-3 px-8 rounded transition duration-300 shadow-[0_0_15px_rgba(6,182,212,0.4)]">
+                ▶ Play
+            </a>
+        </div>
+    </div>
+
+    <button onclick="prevHero()" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/60 hover:bg-black/90 text-white p-4 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 focus:outline-none">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
+    </button>
+    <button onclick="nextHero()" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/60 hover:bg-black/90 text-white p-4 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 focus:outline-none">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
+    </button>
+
+    <div class="absolute bottom-5 left-0 right-0 flex justify-center space-x-2 z-10">
+        {% for m in featured_movies %}
+        <div class="hero-dot w-3 h-3 rounded-full cursor-pointer transition-all duration-300 {% if forloop.first %}bg-cyan-500 w-8{% else %}bg-gray-500/50 hover:bg-gray-400{% endif %}" onclick="changeHero({{ forloop.counter0 }})"></div>
+        {% endfor %}
     </div>
 </section>
 
-{% if personalized_movies %}
-<section class="py-10 px-5 bg-gradient-to-b from-black to-transparent">
+<script>
+    // FIX: truncatewords FIRST, then escapejs to avoid breaking syntax
+    const heroMovies = [
+        {% for m in featured_movies %}
+        {
+            title: "{{ m.title|escapejs }}",
+            overview: "{{ m.overview|truncatewords:40|escapejs }}",
+            backdrop: "{{ m.backdrop_url|default:'' }}",
+            url: "{% url 'movie_detail' m.slug %}",
+            badgeText: {% if forloop.counter0 == 0 or forloop.counter0 == 2 or forloop.counter0 == 4 %}"✨ AI Match"{% else %}"🌍 Trending"{% endif %},
+            badgeColor: {% if forloop.counter0 == 0 or forloop.counter0 == 2 or forloop.counter0 == 4 %}"bg-cyan-600/80 border-cyan-400"{% else %}"bg-purple-600/80 border-purple-400"{% endif %}
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    let currentHeroIndex = 0;
+    let heroInterval;
+    const heroSection = document.getElementById('hero-carousel');
+    const heroTitle = document.getElementById('hero-title');
+    const heroOverview = document.getElementById('hero-overview');
+    const heroPlayBtn = document.getElementById('hero-play-btn');
+    const heroBadge = document.getElementById('hero-badge');
+    const heroContent = document.getElementById('hero-content');
+    const dots = document.querySelectorAll('.hero-dot');
+
+    function changeHero(index) {
+        currentHeroIndex = index;
+        const movie = heroMovies[index];
+
+        heroContent.style.opacity = 0;
+
+        setTimeout(() => {
+            heroSection.style.backgroundImage = `url('${movie.backdrop}')`;
+            heroTitle.innerText = movie.title;
+            heroOverview.innerText = movie.overview;
+            heroPlayBtn.href = movie.url;
+            
+            heroBadge.innerText = movie.badgeText;
+            heroBadge.className = `inline-block text-white text-xs font-bold px-3 py-1 rounded-full mb-3 tracking-widest uppercase shadow-lg border ${movie.badgeColor}`;
+
+            dots.forEach((dot, i) => {
+                dot.className = i === index 
+                    ? "hero-dot w-8 h-3 rounded-full cursor-pointer transition-all duration-300 bg-cyan-500"
+                    : "hero-dot w-3 h-3 rounded-full cursor-pointer transition-all duration-300 bg-gray-500/50 hover:bg-gray-400";
+            });
+
+            heroContent.style.opacity = 1;
+        }, 300);
+
+        resetAutoSlide();
+    }
+
+    function nextHero() {
+        let nextIndex = (currentHeroIndex + 1) % heroMovies.length;
+        changeHero(nextIndex);
+    }
+
+    function prevHero() {
+        let prevIndex = (currentHeroIndex - 1 + heroMovies.length) % heroMovies.length;
+        changeHero(prevIndex);
+    }
+
+    function startAutoSlide() {
+        heroInterval = setInterval(() => {
+            nextHero();
+        }, 7000);
+    }
+
+    function resetAutoSlide() {
+        clearInterval(heroInterval);
+        startAutoSlide();
+    }
+
+    startAutoSlide();
+</script>
+{% endif %}
+
+{% if continue_watching %}
+<section class="py-10 px-5">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold flex items-center">
-            <span class="text-red-600 mr-2">✨</span> Recommended for you
+        <h2 class="text-xl font-bold flex items-center">
+            <span class="text-cyan-500 mr-2">▶</span> Continue Watching
         </h2>
     </div>
 
-    <div class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory scrollbar-hide">
-        {% for movie in personalized_movies %}
-        <div class="snap-start flex-shrink-0 w-40 md:w-48 cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-[0_0_15px_rgba(229,9,20,0.3)] border border-red-900/30"
-             data-slug="{{ movie.slug }}"
+    <div class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory custom-scroll">
+        {% for movie in continue_watching %}
+        <div class="snap-start flex-shrink-0 w-40 md:w-48 cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg border-b-2 border-cyan-500"
+             data-slug="{{ movie.slug }}" 
              data-id="{{ movie.id }}" 
-             data-title="{{ movie.title|escapejs }}"
-             data-description="{{ movie.overview|escapejs|truncatewords:60 }}"
+             data-title="{{ movie.title|escape }}"
+             data-description="{{ movie.overview|truncatewords:60|escape }}" 
              data-year="{{ movie.release_date.year|default:'N/A' }}"
-             data-genre="{% if movie.genres %}{{ movie.genres.0.name|escapejs }}{% else %}N/A{% endif %}"
-             data-poster="{{ movie.poster_url }}"
-             data-backdrop="{{ movie.backdrop_url }}"
-             data-play-url="{% url 'movie_detail' movie.slug %}"
+             data-genre="{% if movie.genres %}{{ movie.genres.0.name|escape }}{% else %}N/A{% endif %}"
+             data-poster="{{ movie.poster_url|default:'' }}" 
+             data-backdrop="{{ movie.backdrop_url|default:'' }}"
+             data-play-url="{% url 'movie_detail' movie.slug %}" 
              onclick="showModal(this)"
-             style="background-image: url('{{ movie.poster_url }}'); 
-                    background-size: cover; 
-                    background-position: center; 
-                    height: 240px;">
-            <div class="w-full h-full bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-3">
-                <p class="text-white text-sm font-semibold truncate">
-                    {{ movie.title }}
-                </p>
+             style="background-image: url('{{ movie.backdrop_url|default:movie.poster_url }}'); background-size: cover; background-position: center; height: 140px;">
+             <div class="w-full h-full bg-gradient-to-t from-black/90 via-black/40 to-transparent flex items-end p-3 relative">
+                <div class="absolute bottom-0 left-0 h-1 bg-cyan-500 opacity-80" style="width: 75%;"></div>
+                <p class="text-white text-sm font-semibold truncate">{{ movie.title }}</p>
             </div>
         </div>
         {% endfor %}
@@ -57,66 +152,93 @@
 </section>
 {% endif %}
 
-<!-- Popular on Netflix -->
+{% if personalized_movies %}
+<section class="py-10 px-5 bg-gradient-to-b from-black to-transparent">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold flex items-center">
+            <span class="text-cyan-500 mr-2">✨</span> Recommended for you
+        </h2>
+        <a href="{% url 'personalized_all' %}" class="text-cyan-500 hover:text-cyan-400 font-semibold flex items-center transition-colors text-sm">
+            Explore your profile →
+        </a>
+    </div>
+
+    <div class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory custom-scroll">
+        {% for movie in personalized_movies %}
+        <div class="snap-start flex-shrink-0 w-40 md:w-48 cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg"
+             data-slug="{{ movie.slug }}" 
+             data-id="{{ movie.id }}" 
+             data-title="{{ movie.title|escape }}"
+             data-description="{{ movie.overview|truncatewords:60|escape }}" 
+             data-year="{{ movie.release_date.year|default:'N/A' }}"
+             data-genre="{% if movie.genres %}{{ movie.genres.0.name|escape }}{% else %}N/A{% endif %}"
+             data-poster="{{ movie.poster_url|default:'' }}" 
+             data-backdrop="{{ movie.backdrop_url|default:'' }}"
+             data-play-url="{% url 'movie_detail' movie.slug %}" 
+             onclick="showModal(this)"
+             style="background-image: url('{{ movie.poster_url }}'); background-size: cover; background-position: center; height: 240px;">
+            <div class="w-full h-full bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-3">
+                <p class="text-white text-sm font-semibold truncate">{{ movie.title }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+
 <section class="py-10 px-5">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold">Popular on Netflix</h2>
+        <h2 class="text-xl font-bold flex items-center">
+            <span class="text-purple-500 mr-2">🔥</span> Trending on Synapse
+        </h2>
         {% if movies.count > 10 or popular_movies.count == 10 %}
-        <a href="{% url 'popular_all' %}" class="text-red-600 hover:text-red-500 font-semibold flex items-center">
-            Ver más →
+        <a href="{% url 'popular_all' %}" class="text-cyan-500 hover:text-cyan-400 font-semibold flex items-center text-sm">
+            See more →
         </a>
         {% endif %}
     </div>
 
-    <div class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory">
+    <div class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory custom-scroll">
         {% for movie in popular_movies %}
         <div class="snap-start flex-shrink-0 w-40 md:w-48 cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg"
-            data-slug="{{ movie.slug }}" data-id="{{ movie.id }}" data-title="{{ movie.title|escapejs }}"
-            data-description="{{ movie.overview|escapejs|truncatewords:60 }}"
-            data-year="{{ movie.release_date.year|default:'N/A' }}"
-            data-genre="{% if movie.genres %}{{ movie.genres.0.name|escapejs }}{% else %}N/A{% endif %}"
-            data-poster="{{ movie.poster_url }}" data-backdrop="{{ movie.backdrop_url }}"
-            data-play-url="{% url 'movie_detail' movie.slug %}" onclick="showModal(this)" style="background-image: url('{{ movie.poster_url }}'); 
-                            background-size: cover; 
-                            background-position: center; 
-                            height: 240px;">
+            data-slug="{{ movie.slug }}" data-id="{{ movie.id }}" data-title="{{ movie.title }}"
+            data-description="{{ movie.overview|truncatewords:60 }}" data-year="{{ movie.release_date.year|default:'N/A' }}"
+            data-genre="{% if movie.genres %}{{ movie.genres.0.name }}{% else %}N/A{% endif %}"
+            data-poster="{{ movie.poster_url|default:'' }}" data-backdrop="{{ movie.backdrop_url|default:'' }}"
+            data-play-url="{% url 'movie_detail' movie.slug %}" onclick="showModal(this)" 
+            style="background-image: url('{{ movie.poster_url }}'); background-size: cover; background-position: center; height: 240px;">
             <div class="w-full h-full bg-gradient-to-t from-black/70 to-transparent flex items-end p-3">
-                <p class="text-white text-sm font-semibold truncate">
-                    {{ movie.title }}
-                </p>
+                <p class="text-white text-sm font-semibold truncate">{{ movie.title }}</p>
             </div>
         </div>
         {% empty %}
-        <p class="text-gray-400">No hay películas populares cargadas aún.</p>
+        <p class="text-gray-400">There are no trending movies loaded yet.</p>
         {% endfor %}
     </div>
 </section>
 
-<!-- Sections by genre -->
 {% for genre, movies in genre_sections.items %}
 <section class="py-10 px-5">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold">{{ genre }}</h2>
-        <a href="{% url 'genre' genre %}" class="text-red-600 hover:text-red-500 font-semibold flex items-center">
-            Ver más →
+        <h2 class="text-xl font-bold flex items-center">
+            <span class="text-gray-400 mr-2">🎬</span> {{ genre }}
+        </h2>
+        <a href="{% url 'genre' genre %}" class="text-cyan-500 hover:text-cyan-400 font-semibold flex items-center text-sm">
+            See more →
         </a>
     </div>
 
-    <div class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory">
+    <div class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory custom-scroll">
         {% for movie in movies %}
         <div class="snap-start flex-shrink-0 w-40 md:w-48 cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg"
-            data-slug="{{ movie.slug }}" data-id="{{ movie.id }}" data-title="{{ movie.title|escapejs }}"
-            data-description="{{ movie.overview|escapejs|truncatewords:60 }}"
-            data-year="{{ movie.release_date.year|default:'N/A' }}" data-genre="{{ genre }}"
-            data-poster="{{ movie.poster_url }}" data-backdrop="{{ movie.backdrop_url }}"
-            data-play-url="{% url 'movie_detail' movie.slug %}" onclick="showModal(this)" style="background-image: url('{{ movie.poster_url }}'); 
-                                background-size: cover; 
-                                background-position: center; 
-                                height: 240px;">
+            data-slug="{{ movie.slug }}" data-id="{{ movie.id }}" data-title="{{ movie.title }}"
+            data-description="{{ movie.overview|truncatewords:60 }}" data-year="{{ movie.release_date.year|default:'N/A' }}" 
+            data-genre="{{ genre }}"
+            data-poster="{{ movie.poster_url|default:'' }}" data-backdrop="{{ movie.backdrop_url|default:'' }}"
+            data-play-url="{% url 'movie_detail' movie.slug %}" onclick="showModal(this)" 
+            style="background-image: url('{{ movie.poster_url }}'); background-size: cover; background-position: center; height: 240px;">
             <div class="w-full h-full bg-gradient-to-t from-black/70 to-transparent flex items-end p-3">
-                <p class="text-white text-sm font-semibold truncate">
-                    {{ movie.title }}
-                </p>
+                <p class="text-white text-sm font-semibold truncate">{{ movie.title }}</p>
             </div>
         </div>
         {% empty %}

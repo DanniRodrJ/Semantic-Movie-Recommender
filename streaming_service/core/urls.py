@@ -9,6 +9,7 @@ urlpatterns = [
     path('onboarding/', views.OnboardingView.as_view(), name='onboarding'),
     path('movie/<slug:slug>/', views.MovieDetailView.as_view(), name='movie_detail'),
     path('popular/', views.PopularMoviesView.as_view(), name='popular_all'),
+    path('personalized/', views.PersonalizedMoviesView.as_view(), name='personalized_all'),
     path('genre/<str:genre>/', views.GenreListView.as_view(), name='genre'),
     path('search/', views.SearchView.as_view(), name='search'),
     path('my_list', views.MyListView.as_view(), name='my_list'),

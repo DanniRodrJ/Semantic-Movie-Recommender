@@ -6,7 +6,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Netflix Clone{% endblock %}</title>
+    <title>{% block title %}Synapse{% endblock %}</title>
 
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'assets/styles.css' %}">
@@ -19,82 +19,85 @@
 
 <body class="text-white" style="background-color: #141414;">
     {% block header %}
-    <header class="p-5 flex justify-between items-center">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png" height="30" alt="Netflix Logo"
-            width="110">
+    <header class="sticky top-0 z-50 px-6 py-4 md:px-10 flex justify-between items-center bg-black bg-opacity-90 backdrop-blur-md border-b border-gray-800 transition-all duration-300">
+        <div class="flex items-center space-x-10">
+            <a href="{% url 'home' %}">
+                <img src="{% static 'assets/images/logo3.png' %}" alt="Synapse Logo" class="h-8 md:h-10 w-auto object-contain">
+            </a>
 
-        <nav class="flex space-x-5">
-            <span><a href="{% url 'home' %}">Home</a></span>
+            <nav class="hidden md:flex items-center space-x-6 text-sm font-medium text-gray-300">
+                <a href="{% url 'home' %}" class="hover:text-cyan-400 transition-colors duration-200">Home</a>
 
-            <div class="dropdown relative">
-                <button id="dropdownMenuButton"
-                    class="flex items-center space-x-1 hover:text-gray-300 focus:outline-none" aria-expanded="false"
-                    aria-haspopup="true">
-                    <span>Genres</span>
-                    <svg class="w-4 h-4 transition-transform duration-200" id="dropdownArrow" fill="currentColor"
-                        viewBox="0 0 20 20">
-                        <path fill-rule="evenodd"
-                            d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                            clip-rule="evenodd" />
-                    </svg>
-                </button>
+                <div class="dropdown relative">
+                    <button id="dropdownMenuButton" class="flex items-center space-x-1 hover:text-cyan-400 transition-colors duration-200 focus:outline-none">
+                        <span>Genres</span>
+                        <svg class="w-4 h-4 transition-transform duration-200" id="dropdownArrow" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                    </button>
 
-                <div id="dropdownMenu"
-                    class="hidden absolute left-0 mt-2 w-48 bg-gray-800 rounded-md shadow-lg py-1 z-50" role="menu">
-                    <a href="{% url 'genre' 'Action' %}" class="block px-4 py-2 text-sm hover:bg-gray-700">Action</a>
-                    <a href="{% url 'genre' 'Comedy' %}" class="block px-4 py-2 text-sm hover:bg-gray-700">Comedy</a>
-                    <a href="{% url 'genre' 'Drama' %}" class="block px-4 py-2 text-sm hover:bg-gray-700">Drama</a>
-                    <a href="{% url 'genre' 'Horror' %}" class="block px-4 py-2 text-sm hover:bg-gray-700">Horror</a>
-                    <a href="{% url 'genre' 'Romance' %}" class="block px-4 py-2 text-sm hover:bg-gray-700">Romance</a>
-                    <a href="{% url 'genre' 'Science Fiction' %}"
-                        class="block px-4 py-2 text-sm hover:bg-gray-700">Science Fiction</a>
-                    <a href="{% url 'genre' 'Fantasy' %}" class="block px-4 py-2 text-sm hover:bg-gray-700">Fantasy</a>
+                    <div id="dropdownMenu" class="hidden absolute left-0 mt-6 w-48 bg-gray-900 border border-gray-700 rounded-md shadow-2xl py-2 z-50">
+                        <a href="{% url 'genre' 'Action' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-cyan-400 transition">Action</a>
+                        <a href="{% url 'genre' 'Comedy' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-cyan-400 transition">Comedy</a>
+                        <a href="{% url 'genre' 'Drama' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-cyan-400 transition">Drama</a>
+                        <a href="{% url 'genre' 'Horror' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-cyan-400 transition">Horror</a>
+                        <a href="{% url 'genre' 'Romance' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-cyan-400 transition">Romance</a>
+                        <a href="{% url 'genre' 'Science Fiction' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-cyan-400 transition">Science Fiction</a>
+                        <a href="{% url 'genre' 'Fantasy' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-cyan-400 transition">Fantasy</a>
+                    </div>
                 </div>
-            </div>
 
-            <span><a href="{% url 'my_list' %}">My List</a></span>
-        </nav>
+                <a href="{% url 'my_list' %}" class="hover:text-cyan-400 transition-colors duration-200">My List</a>
+            </nav>
+        </div>
 
-        <div class="flex space-x-5 items-center">
-            <form action="{% url 'search' %}" method="GET">
-                <input type="search" name="q" placeholder="Search" class="bg-gray-700 p-2 rounded">
-                <button type="submit" class="bg-red-600 text-white p-2 rounded hover:bg-red-500">Search</button>
+        <div class="flex items-center space-x-6">
+            <form action="{% url 'search' %}" method="GET" class="relative hidden sm:block">
+                <input type="search" name="q" placeholder="Titles, people, genres..." 
+                       class="bg-gray-900 border border-gray-700 text-sm rounded-full focus:ring-cyan-500 focus:border-cyan-500 block w-64 px-4 py-2 placeholder-gray-500 focus:outline-none transition-all duration-300">
+                <button type="submit" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-cyan-400">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                </button>
             </form>
 
             <div class="relative">
-                <span>Welcome, {{ user.username }}</span>
-                <a href="{% url 'logout' %}" class="block p-2 text-sm hover:text-gray-300">Logout</a>
+                <button id="profileMenuButton" class="w-8 h-8 rounded border-2 border-transparent hover:border-cyan-400 overflow-hidden transition-all duration-200 focus:outline-none block cursor-pointer">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" alt="Profile" class="w-full h-full object-cover">
+                </button>
+
+                <div id="profileMenu" class="hidden absolute right-0 mt-4 w-40 bg-gray-900 border border-gray-700 rounded-md shadow-2xl py-2 z-50">
+                    <p class="px-4 py-3 text-xs text-gray-400 border-b border-gray-800">Hi, {{ user.username }}</p>
+                    <a href="{% url 'logout' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-red-500 transition">Sign Out</a>
+                </div>
             </div>
         </div>
     </header>
-
-    <hr>
+    <hr class="border-gray-800">
     {% endblock %}
+    
     {% block content %}{% endblock %}
 
-    <div id="movieModal"
-        class="modal hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50">
-        <div class="modal-content bg-gray-900 rounded-lg p-6 max-w-3xl w-full mx-4 relative">
+    <div id="movieModal" class="fixed inset-0 bg-black bg-opacity-80 items-center justify-center z-50" style="display: none;">
+        <div class="bg-gray-900 rounded-lg p-6 max-w-3xl w-full mx-4 relative shadow-2xl border border-gray-700">
             <div class="flex justify-between items-center mb-4">
-                <h2 id="modalTitle" class="text-2xl font-bold"></h2>
-                <button onclick="hideModal()" class="text-white text-3xl hover:text-gray-300">&times;</button>
+                <h2 id="modalTitle" class="text-3xl font-bold text-white"></h2>
+                <button onclick="hideModal()" class="text-gray-400 text-3xl hover:text-white transition focus:outline-none">&times;</button>
             </div>
 
-            <img id="modalImage" class="w-full h-64 object-cover rounded-lg mb-4" src="" alt="Movie Cover">
+            <img id="modalImage" class="w-full h-64 object-cover rounded-lg mb-4 shadow-inner" src="" alt="Movie Cover">
 
-            <div class="flex justify-between mb-4 text-gray-300">
+            <div class="flex justify-between mb-4 text-cyan-400 font-semibold text-sm tracking-wide uppercase">
                 <span id="modalYear"></span>
                 <span id="modalGenre"></span>
-                <span id="modalLength"></span>
             </div>
 
-            <p id="modalDescription" class="mb-6 text-gray-300"></p>
+            <p id="modalDescription" class="mb-8 text-gray-300 leading-relaxed"></p>
 
-            <div class="flex space-x-4 mb-6">
+            <div class="flex space-x-4">
                 <a id="modalPlayLink" href="#">
-                    <button class="bg-red-600 text-white px-6 py-3 rounded hover:bg-red-700">Play</button>
+                    <button class="bg-cyan-500 text-black px-8 py-3 rounded font-bold hover:bg-cyan-400 transition shadow-[0_0_15px_rgba(6,182,212,0.4)]">Play</button>
                 </a>
-                <button id="addToListButton" class="border border-white text-white px-6 py-3 rounded hover:bg-gray-700">
+                <button id="addToListButton" class="border-2 border-gray-500 text-white px-8 py-3 rounded font-bold hover:bg-gray-700 hover:border-gray-400 transition">
                     + My List
                 </button>
             </div>
@@ -102,88 +105,132 @@
     </div>
 
     <script>
+        // Lógica del Modal 100% Vanilla JS
         function showModal(element) {
-            const slug = element.dataset.slug;
-            const id = element.dataset.id;
-            const title = element.dataset.title;
-            const description = element.dataset.description;
-            const year = element.dataset.year;
-            const genre = element.dataset.genre || 'N/A';
-            const poster = element.dataset.poster;
-            const backdrop = element.dataset.backdrop;
-            const playUrl = element.dataset.playUrl;
+            try {
+                const slug = element.getAttribute('data-slug');
+                const id = element.getAttribute('data-id');
+                const title = element.getAttribute('data-title') || 'Unknown';
+                const description = element.getAttribute('data-description') || 'No description available.';
+                const year = element.getAttribute('data-year') || '';
+                const genre = element.getAttribute('data-genre') || '';
+                const poster = element.getAttribute('data-poster');
+                const backdrop = element.getAttribute('data-backdrop');
+                const playUrl = element.getAttribute('data-play-url');
 
-            document.getElementById('modalTitle').textContent = title;
-            document.getElementById('modalImage').src = backdrop || poster;
-            document.getElementById('modalYear').textContent = 'Year: ' + (year || 'N/A');
-            document.getElementById('modalGenre').textContent = 'Genre: ' + genre;
-            document.getElementById('modalLength').textContent = '';
-            document.getElementById('modalDescription').textContent = description;
-            document.getElementById('modalPlayLink').href = playUrl;
+                document.getElementById('modalTitle').textContent = title;
+                document.getElementById('modalImage').src = backdrop || poster || '';
+                document.getElementById('modalYear').textContent = year;
+                document.getElementById('modalGenre').textContent = genre;
+                document.getElementById('modalDescription').textContent = description;
 
-            document.getElementById('addToListButton').dataset.slug = slug;
-            document.getElementById('modalPlayLink').dataset.movieId = id;
+                const playLink = document.getElementById('modalPlayLink');
+                if (playLink) {
+                    playLink.href = playUrl;
+                    playLink.setAttribute('data-movie-id', id);
+                }
 
-            document.getElementById('movieModal').classList.remove('hidden');
+                const addBtn = document.getElementById('addToListButton');
+                if (addBtn) addBtn.setAttribute('data-slug', slug);
+
+                // Forzar apertura nativa
+                document.getElementById('movieModal').style.display = 'flex';
+                document.body.style.overflow = 'hidden'; // Evita scroll de fondo
+            } catch (error) {
+                console.error("Error modal:", error);
+            }
         }
 
         function hideModal() {
-            document.getElementById('movieModal').classList.add('hidden');
+            document.getElementById('movieModal').style.display = 'none';
+            document.body.style.overflow = 'auto';
         }
 
         window.onclick = function (event) {
             if (event.target.id === 'movieModal') hideModal();
         }
 
-        document.getElementById('addToListButton')?.addEventListener('click', function () {
-            const slug = this.dataset.slug;
-            if (!slug) return;
+        document.addEventListener('DOMContentLoaded', function () {
+            // Dropdown Menu Fix
+            const dropBtn = document.getElementById('dropdownMenuButton');
+            const dropMenu = document.getElementById('dropdownMenu');
+            const profileBtn = document.getElementById('profileMenuButton');
+            const profileMenu = document.getElementById('profileMenu');
+            // Toggle Menú de Géneros
+            if (dropBtn && dropMenu) {
+                dropBtn.addEventListener('click', (e) => {
+                    e.stopPropagation(); // Evita que el clic cierre el menú instantáneamente
+                    dropMenu.classList.toggle('hidden');
+                    if(profileMenu) profileMenu.classList.add('hidden'); // Cierra el otro si está abierto
+                });
+            }
+            // Toggle Menú del Perfil
+            if (profileBtn && profileMenu) {
+                profileBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    profileMenu.classList.toggle('hidden');
+                    if(dropMenu) dropMenu.classList.add('hidden'); // Cierra el otro si está abierto
+                });
+            }
 
-            $.ajax({
-                url: "{% url 'toggle_favorite' %}",
-                type: "POST",
-                data: {
-                    movie_slug: slug,
-                    csrfmiddlewaretoken: "{{ csrf_token }}"
-                },
-                success: function (data) {
-                    const btn = $('#addToListButton');
-                    if (data.status === 'added') {
-                        btn.text('✓ In My List');
-                        btn.addClass('bg-green-600 border-green-600');
-                    } else {
-                        btn.text('+ My List');
-                        btn.removeClass('bg-green-600 border-green-600');
-                    }
-                },
-                error: function () {
-                    alert('Error al actualizar favoritos');
+            // Cerrar cualquier menú al hacer clic afuera
+            document.addEventListener('click', (e) => {
+                if (dropMenu && !dropMenu.contains(e.target) && !dropBtn.contains(e.target)) {
+                    dropMenu.classList.add('hidden');
+                }
+                if (profileMenu && !profileMenu.contains(e.target) && !profileBtn.contains(e.target)) {
+                    profileMenu.classList.add('hidden');
                 }
             });
-        });
 
-        document.getElementById('modalPlayLink')?.addEventListener('click', function (e) {
-            const movieId = this.dataset.movieId;
-            if (!movieId) return;
-
-            fetch("{% url 'record_watch' %}", {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}'
-                },
-                body: JSON.stringify({ movie_id: movieId })
-            })
-                .then(response => {
-                    console.log("Historial actualizado silenciosamente");
-                })
-                .catch(error => {
-                    console.error("Error al guardar en el historial", error);
+            // Add to List
+            const addToListBtn = document.getElementById('addToListButton');
+            if (addToListBtn) {
+                addToListBtn.addEventListener('click', function () {
+                    const slug = this.getAttribute('data-slug');
+                    if (!slug) return;
+                    $.ajax({
+                        url: "{% url 'toggle_favorite' %}",
+                        type: "POST",
+                        data: { movie_slug: slug, csrfmiddlewaretoken: "{{ csrf_token }}" },
+                        success: function (data) {
+                            if (data.status === 'added') {
+                                $(addToListBtn).text('✓ In My List').removeClass('border-gray-500').addClass('border-green-500 text-green-400');
+                            } else {
+                                $(addToListBtn).text('+ My List').removeClass('border-green-500 text-green-400').addClass('border-gray-500');
+                            }
+                        }
+                    });
                 });
+            }
+
+            // Record Watch History
+            const playLinkBtn = document.getElementById('modalPlayLink');
+            if (playLinkBtn) {
+                playLinkBtn.addEventListener('click', function () {
+                    const movieId = this.getAttribute('data-movie-id');
+                    if (!movieId) return;
+                    fetch("{% url 'record_watch' %}", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                        body: JSON.stringify({ movie_id: movieId })
+                    });
+                });
+            }
         });
     </script>
-
     {% block extra_js %}{% endblock %}
+    <footer class="bg-black/90 border-t border-gray-800 mt-20 py-10 px-5">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                <div class="flex space-x-6">
+                    <a href="#" class="text-gray-400 hover:text-cyan-400 transition text-sm">Terms of Use</a>
+                    <a href="#" class="text-gray-400 hover:text-cyan-400 transition text-sm">Privacy</a>
+                    <a href="#" class="text-gray-400 hover:text-cyan-400 transition text-sm">Contact</a>
+                </div>
+                <p class="text-gray-500 text-sm">© 2026 Synapse. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
 </body>
-
 </html>

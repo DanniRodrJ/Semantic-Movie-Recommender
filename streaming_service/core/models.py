@@ -1,6 +1,6 @@
-import uuid
+import uuid, numpy as np
 from django.db import models
-from pgvector.django import VectorField
+from pgvector.django import VectorField, HnswIndex
 from django.utils.dateparse import parse_date
 from django.utils.text import slugify
 from django.conf import settings
@@ -45,7 +45,7 @@ class Movie(models.Model):
     director = models.CharField(max_length=255, null=True, blank=True)
     embedding = VectorField(dimensions=768, null=True, blank=True)  # The film's multimodal approach
     embedding_tokens = models.IntegerField(default=0, help_text="Tokens spent on Gemini", null=True, blank=True)
-
+    
     def __str__(self):
         return self.title
     
@@ -88,10 +88,15 @@ class Movie(models.Model):
         
     class Meta:
         indexes = [
-            models.Index(fields=['title', 'release_date']),
+            HnswIndex(
+                name='movie_embed_hnsw_idx',
+                fields=['embedding'],
+                m=16,                # Number of bidirectional connections in the graph
+                ef_construction=64,  # Size of the dynamic list during construction
+                opclasses=['vector_cosine_ops'] 
+            )
         ]
         ordering = ['-popularity', '-vote_average', 'title']
-        
         
 class UserProfile(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
@@ -112,7 +117,7 @@ class UserProfile(models.Model):
         fav_ids = set()
         for movie in fav_movies:
             vectors.append(np.array(movie.embedding))
-            weights.append(3.0) # Peso triple
+            weights.append(3.0) # Triple Weight
             fav_ids.add(movie.id)
 
         # 2. History (limit to the last 50 to not drag old tastes)
@@ -143,4 +148,4 @@ class WatchHistory(models.Model):
     watched_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-watched_at']
+        ordering = ['-watched_at']       

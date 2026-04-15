@@ -3,3 +3,12 @@ __pycache__/
 *.pyc
 .env
 .git/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+*.pid
+
+# Logs
+logs/
+*.log

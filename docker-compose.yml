@@ -1,0 +1,42 @@
+services:
+  # 1. El Broker (La base de datos en memoria para los mensajes)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  # 2. Tu aplicación Web (Lo que ya tenías)
+  web:
+    build: .
+    command: uvicorn streaming_service.asgi:application --host 0.0.0.0 --port 8050
+    volumes:
+      - ./streaming_service:/app
+    ports:
+      - "8050:8050"
+    env_file:
+      - .env
+    depends_on:
+      - redis
+
+  # 3. El Worker de Celery (El que procesa las películas en segundo plano)
+  celery-worker:
+    build: .
+    command: celery -A streaming_service worker -l info
+    volumes:
+      - ./streaming_service:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - web
+
+  # 4. El Beat de Celery (El "reloj" que dispara las tareas automáticas)
+  celery-beat:
+    build: .
+    command: celery -A streaming_service beat -l info
+    volumes:
+      - ./streaming_service:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis

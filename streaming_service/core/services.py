@@ -1,8 +1,11 @@
 import os
 import requests
 import numpy as np
+import logging
 from google import genai
 from google.genai import types
+
+logger = logging.getLogger(__name__)
 
 def generate_multimodal_embedding(text_overview, image_url, task_type="RETRIEVAL_DOCUMENT"):
     client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
@@ -24,7 +27,7 @@ def generate_multimodal_embedding(text_overview, image_url, task_type="RETRIEVAL
                 )
                 contents.append(image_part)
         except Exception as e:
-            print(f"Error downloading image: {e}")
+            logger.error(f"Error downloading image: {e}")
 
     if not contents:
         return None, 0
@@ -58,7 +61,7 @@ def generate_multimodal_embedding(text_overview, image_url, task_type="RETRIEVAL
         return normalized_vector.tolist(), total_tokens
     except Exception as e:
         error_msg = str(e).lower()
-        print(f"Error generating embedding with Gemini: {e}")
+        logger.error(f"Error generating embedding with Gemini: {e}")
         if "429" in error_msg or "quota" in error_msg or "exhausted" in error_msg:
             raise ValueError("QUOTA_REACHED")
         return None, 0

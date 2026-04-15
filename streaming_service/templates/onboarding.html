@@ -2,8 +2,7 @@
 
 {% block header %}
 <div class="p-5 flex justify-center bg-black">
-    <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png" height="30" alt="Netflix Logo"
-        width="110">
+    <img src="{% static 'assets/logo.png' %}" height="30" alt="Synapse Logo" width="110">
 </div>
 {% endblock %}
 
@@ -17,7 +16,7 @@
         </p>
 
         <div id="counter-badge"
-            class="mt-4 inline-block bg-red-600 px-4 py-1 rounded-full text-sm font-bold opacity-0 transition-opacity">
+            class="mt-4 inline-block bg-cyan-500 px-4 py-1 rounded-full text-sm font-bold opacity-0 transition-opacity">
             <span id="selected-count">0</span> selected
         </div>
     </div>
@@ -34,7 +33,7 @@
                 class="absolute inset-0 bg-black/0 group-hover:bg-black/30 rounded-lg pointer-events-none transition-all">
             </div>
 
-            <div class="check-icon absolute top-2 right-2 bg-red-600 rounded-full p-1 opacity-0 transition-opacity">
+            <div class="check-icon absolute top-2 right-2 bg-cyan-500 rounded-full p-1 opacity-0 transition-opacity">
                 <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
                 </svg>
@@ -48,13 +47,13 @@
         <button onclick="skipOnboarding()"
             class="px-8 py-3 bg-gray-800 hover:bg-gray-700 rounded-full font-bold transition">Skip for now</button>
         <button id="btn-continue" disabled onclick="submitOnboarding()"
-            class="px-12 py-3 bg-red-600 hover:bg-red-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-full font-bold transition">Start watching</button>
+            class="px-12 py-3 bg-cyan-500 hover:bg-cyan-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-full font-bold transition">Start watching</button>
     </div>
 </div>
 
 <style>
     .movie-card.selected img {
-        border-color: #e50914;
+        border-color: #06B6D4;
         transform: scale(0.95);
         opacity: 0.8;
     }
@@ -117,10 +116,10 @@
         const countSpan = document.getElementById('selected-count');
 
         if (selectedIds.length === MAX_SELECTIONS) {
-            badge.classList.replace('bg-red-600', 'bg-green-600');
+            badge.classList.replace('bg-cyan-500', 'bg-green-600');
             countSpan.innerText = "¡Máximo (10) alcanzado!";
         } else {
-            badge.classList.replace('bg-green-600', 'bg-red-600');
+            badge.classList.replace('bg-green-600', 'bg-cyan-500');
             countSpan.innerText = selectedIds.length;
         }
 
