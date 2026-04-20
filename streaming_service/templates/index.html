@@ -7,15 +7,15 @@
 {% if featured_movies %}
 <section id="hero-carousel" class="group relative py-20 px-10 transition-all duration-1000 ease-in-out flex flex-col justify-center" 
          style="background-image: url('{{ featured_movies.0.backdrop_url }}'); background-size: cover; background-position: center; min-height: 70vh;">
-    <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent"></div>
-    <div class="absolute inset-0 bg-gradient-to-t from-[#141414] via-transparent to-transparent"></div>
+    <div class="absolute inset-0 bg-gradient-to-r from-synapse-bg/90 via-synapse-bg/50 to-transparent"></div>
+    <div class="absolute inset-0 bg-gradient-to-t from-synapse-bg via-transparent to-transparent"></div>
     
     <div class="max-w-4xl relative z-10 transition-opacity duration-500" id="hero-content">
-        <span id="hero-badge" class="inline-block bg-cyan-600/80 text-white text-xs font-bold px-3 py-1 rounded-full mb-3 tracking-widest uppercase shadow-lg border border-cyan-400">
+        <span id="hero-badge" class="inline-block bg-synapse-accent/80 text-white text-xs font-bold px-3 py-1 rounded-full mb-3 tracking-widest uppercase shadow-lg borderborder-synapse-accent">
             AI Match
         </span>
 
-        <h1 id="hero-title" class="text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-2xl tracking-tight">
+        <h1 id="hero-title" class="text-4xl md:text-6xl font-extrabold mb-4 drop-shadow-2xl tracking-tight text-synapse-text">
             {{ featured_movies.0.title }}
         </h1>
         <p id="hero-overview" class="text-base md:text-lg mb-8 max-w-2xl drop-shadow-md text-gray-200">
@@ -23,28 +23,27 @@
         </p>
         <div class="flex space-x-4">
             <a id="hero-play-btn" href="{% url 'movie_detail' featured_movies.0.slug %}"
-                class="flex items-center bg-cyan-500 hover:bg-cyan-400 text-black font-bold py-3 px-8 rounded transition duration-300 shadow-[0_0_15px_rgba(6,182,212,0.4)]">
+                class="flex items-center bg-synapse-accent hover:brightness-110 text-white font-bold py-3 px-8 rounded transition duration-300 shadow-lg">
                 ▶ Play
             </a>
         </div>
     </div>
 
-    <button onclick="prevHero()" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/60 hover:bg-black/90 text-white p-4 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 focus:outline-none">
+    <button onclick="prevHero()" class="absolute left-4 top-1/2 transform -translate-y-1/2 bg-synapse-bg/60 hover:bg-synapse-bg/90 text-white p-4 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 focus:outline-none">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"></path></svg>
     </button>
-    <button onclick="nextHero()" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/60 hover:bg-black/90 text-white p-4 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 focus:outline-none">
+    <button onclick="nextHero()" class="absolute right-4 top-1/2 transform -translate-y-1/2 bg-synapse-bg/60 hover:bg-synapse-bg/90 text-white p-4 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20 focus:outline-none">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"></path></svg>
     </button>
 
     <div class="absolute bottom-5 left-0 right-0 flex justify-center space-x-2 z-10">
         {% for m in featured_movies %}
-        <div class="hero-dot w-3 h-3 rounded-full cursor-pointer transition-all duration-300 {% if forloop.first %}bg-cyan-500 w-8{% else %}bg-gray-500/50 hover:bg-gray-400{% endif %}" onclick="changeHero({{ forloop.counter0 }})"></div>
+        <div class="hero-dot w-3 h-3 rounded-full cursor-pointer transition-all duration-300 {% if forloop.first %}bg-synapse-accent w-8{% else %}bg-gray-500/50 hover:bg-gray-400{% endif %}" onclick="changeHero({{ forloop.counter0 }})"></div>
         {% endfor %}
     </div>
 </section>
 
 <script>
-    // FIX: truncatewords FIRST, then escapejs to avoid breaking syntax
     const heroMovies = [
         {% for m in featured_movies %}
         {
@@ -85,7 +84,7 @@
 
             dots.forEach((dot, i) => {
                 dot.className = i === index 
-                    ? "hero-dot w-8 h-3 rounded-full cursor-pointer transition-all duration-300 bg-cyan-500"
+                    ? "hero-dot w-8 h-3 rounded-full cursor-pointer transition-all duration-300 bg-synapse-accent"
                     : "hero-dot w-3 h-3 rounded-full cursor-pointer transition-all duration-300 bg-gray-500/50 hover:bg-gray-400";
             });
 
@@ -123,61 +122,87 @@
 {% if continue_watching %}
 <section class="py-10 px-5">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold flex items-center">
-            <span class="text-cyan-500 mr-2">▶</span> Continue Watching
+        <h2 class="text-xl font-bold flex items-center text-synapse-text">
+            <span class="text-synapse-accent mr-2">▶️</span> Continue Watching
         </h2>
     </div>
 
-    <div class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory custom-scroll">
+    <div id="continue-watching-skeleton" class="flex overflow-x-auto space-x-4 pb-4">
+        <div class="skeleton-card w-40 md:w-48 h-36 rounded-lg bg-synapse-card animate-pulse"></div>
+        <div class="skeleton-card w-40 md:w-48 h-36 rounded-lg bg-synapse-card animate-pulse"></div>
+        <div class="skeleton-card w-40 md:w-48 h-36 rounded-lg bg-synapse-card animate-pulse"></div>
+        <div class="skeleton-card w-40 md:w-48 h-36 rounded-lg bg-synapse-card animate-pulse"></div>
+        <div class="skeleton-card w-40 md:w-48 h-36 rounded-lg bg-synapse-card animate-pulse"></div>
+    </div>
+
+    <div id="continue-watching-content" class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory custom-scroll" style="display: none;">
         {% for movie in continue_watching %}
-        <div class="snap-start flex-shrink-0 w-40 md:w-48 cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg border-b-2 border-cyan-500"
-             data-slug="{{ movie.slug }}" 
-             data-id="{{ movie.id }}" 
-             data-title="{{ movie.title|escape }}"
-             data-description="{{ movie.overview|truncatewords:60|escape }}" 
-             data-year="{{ movie.release_date.year|default:'N/A' }}"
-             data-genre="{% if movie.genres %}{{ movie.genres.0.name|escape }}{% else %}N/A{% endif %}"
-             data-poster="{{ movie.poster_url|default:'' }}" 
-             data-backdrop="{{ movie.backdrop_url|default:'' }}"
-             data-play-url="{% url 'movie_detail' movie.slug %}" 
-             onclick="showModal(this)"
-             style="background-image: url('{{ movie.backdrop_url|default:movie.poster_url }}'); background-size: cover; background-position: center; height: 140px;">
-             <div class="w-full h-full bg-gradient-to-t from-black/90 via-black/40 to-transparent flex items-end p-3 relative">
-                <div class="absolute bottom-0 left-0 h-1 bg-cyan-500 opacity-80" style="width: 75%;"></div>
-                <p class="text-white text-sm font-semibold truncate">{{ movie.title }}</p>
+        <div class="movie-card snap-start flex-shrink-0 w-40 md:w-48 cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg border-b-2 border-synapse-accent relative group"
+            data-slug="{{ movie.slug }}" 
+            data-id="{{ movie.id }}" 
+            data-title="{{ movie.title|escape }}"
+            data-description="{{ movie.overview|truncatewords:60|escape }}" 
+            data-year="{{ movie.release_date.year|default:'N/A' }}"
+            data-genre="{% if movie.genres %}{{ movie.genres.0.name|escape }}{% else %}N/A{% endif %}"
+            data-rating="{{ movie.vote_average|default:'N/A' }}"
+            data-poster="{{ movie.poster_url|default:'' }}" 
+            data-backdrop="{{ movie.backdrop_url|default:'' }}"
+            data-play-url="{% url 'movie_detail' movie.slug %}" 
+            onclick="showModal(this)"
+            style="background-image: url('{{ movie.backdrop_url|default:movie.poster_url }}'); background-size: cover; background-position: center; height: 140px;">
+            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-synapse-card text-white text-xs rounded opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-20">
+                ⭐ {{ movie.vote_average|default:'N/A' }} • {{ movie.release_date.year|default:'N/A' }}
             </div>
+            <div class="w-full h-full bg-gradient-to-t from-synapse-bg/95 via-synapse-bg/40 to-transparent flex items-end p-3 relative">
+            <div class="absolute bottom-0 left-0 h-1 bg-synapse-accent opacity-80" style="width: 75%;"></div>
+            <p class="text-white text-sm font-semibold truncate">{{ movie.title }}</p>
+        </div>
         </div>
         {% endfor %}
     </div>
 </section>
+<script>
+    setTimeout(function() {
+        const skeleton = document.getElementById('continue-watching-skeleton');
+        const content = document.getElementById('continue-watching-content');
+        if (skeleton && content) {
+            skeleton.style.display = 'none';
+            content.style.display = 'flex';
+        }
+    }, 1000);
+</script>
 {% endif %}
 
 {% if personalized_movies %}
-<section class="py-10 px-5 bg-gradient-to-b from-black to-transparent">
+<section class="py-10 px-5 bg-gradient-to-b from-synapse-bg/50 via-synapse-card/30 to-transparent rounded-2xl mx-2 mb-4 border border-synapse-card">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold flex items-center">
-            <span class="text-cyan-500 mr-2">✨</span> Recommended for you
+        <h2 class="text-xl font-bold flex items-center text-synapse-text">
+            <span class="text-synapse-accent mr-2">✨</span> Recommended for you
         </h2>
-        <a href="{% url 'personalized_all' %}" class="text-cyan-500 hover:text-cyan-400 font-semibold flex items-center transition-colors text-sm">
+        <a href="{% url 'personalized_all' %}" class="text-synapse-accent hover:brightness-110 font-semibold flex items-center transition-colors text-sm">
             Explore your profile →
         </a>
     </div>
 
     <div class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory custom-scroll">
         {% for movie in personalized_movies %}
-        <div class="snap-start flex-shrink-0 w-40 md:w-48 cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg"
-             data-slug="{{ movie.slug }}" 
-             data-id="{{ movie.id }}" 
-             data-title="{{ movie.title|escape }}"
-             data-description="{{ movie.overview|truncatewords:60|escape }}" 
-             data-year="{{ movie.release_date.year|default:'N/A' }}"
-             data-genre="{% if movie.genres %}{{ movie.genres.0.name|escape }}{% else %}N/A{% endif %}"
-             data-poster="{{ movie.poster_url|default:'' }}" 
-             data-backdrop="{{ movie.backdrop_url|default:'' }}"
-             data-play-url="{% url 'movie_detail' movie.slug %}" 
-             onclick="showModal(this)"
-             style="background-image: url('{{ movie.poster_url }}'); background-size: cover; background-position: center; height: 240px;">
-            <div class="w-full h-full bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-3">
+        <div class="movie-card snap-start flex-shrink-0 w-40 md:w-48 cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg relative group"
+            data-slug="{{ movie.slug }}" 
+            data-id="{{ movie.id }}" 
+            data-title="{{ movie.title|escape }}"
+            data-description="{{ movie.overview|truncatewords:60|escape }}" 
+            data-year="{{ movie.release_date.year|default:'N/A' }}"
+            data-genre="{% if movie.genres %}{{ movie.genres.0.name|escape }}{% else %}N/A{% endif %}"
+            data-rating="{{ movie.vote_average|default:'N/A' }}"
+            data-poster="{{ movie.poster_url|default:'' }}" 
+            data-backdrop="{{ movie.backdrop_url|default:'' }}"
+            data-play-url="{% url 'movie_detail' movie.slug %}" 
+            onclick="showModal(this)"
+            style="background-image: url('{{ movie.poster_url }}'); background-size: cover; background-position: center; height: 240px;">
+            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-synapse-card text-white text-xs rounded opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-20">
+                ⭐ {{ movie.vote_average|default:'N/A' }} • {{ movie.release_date.year|default:'N/A' }}
+            </div>
+            <div class="w-full h-full bg-gradient-to-t from-synapse-bg/95 via-synapse-bg/30 to-transparent flex items-end p-3">
                 <p class="text-white text-sm font-semibold truncate">{{ movie.title }}</p>
             </div>
         </div>
@@ -188,11 +213,11 @@
 
 <section class="py-10 px-5">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold flex items-center">
+        <h2 class="text-xl font-bold flex items-center text-synapse-text">
             <span class="text-purple-500 mr-2">🔥</span> Trending on Synapse
         </h2>
         {% if movies.count > 10 or popular_movies.count == 10 %}
-        <a href="{% url 'popular_all' %}" class="text-cyan-500 hover:text-cyan-400 font-semibold flex items-center text-sm">
+        <a href="{% url 'popular_all' %}" class="text-synapse-accent hover:brightness-110 font-semibold flex items-center text-sm">
             See more →
         </a>
         {% endif %}
@@ -200,14 +225,18 @@
 
     <div class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory custom-scroll">
         {% for movie in popular_movies %}
-        <div class="snap-start flex-shrink-0 w-40 md:w-48 cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg"
+        <div class="movie-card snap-start flex-shrink-0 w-40 md:w-48 cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg relative group"
             data-slug="{{ movie.slug }}" data-id="{{ movie.id }}" data-title="{{ movie.title }}"
             data-description="{{ movie.overview|truncatewords:60 }}" data-year="{{ movie.release_date.year|default:'N/A' }}"
             data-genre="{% if movie.genres %}{{ movie.genres.0.name }}{% else %}N/A{% endif %}"
+            data-rating="{{ movie.vote_average|default:'N/A' }}"
             data-poster="{{ movie.poster_url|default:'' }}" data-backdrop="{{ movie.backdrop_url|default:'' }}"
             data-play-url="{% url 'movie_detail' movie.slug %}" onclick="showModal(this)" 
             style="background-image: url('{{ movie.poster_url }}'); background-size: cover; background-position: center; height: 240px;">
-            <div class="w-full h-full bg-gradient-to-t from-black/70 to-transparent flex items-end p-3">
+            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-synapse-card text-white text-xs rounded opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-20">
+                ⭐ {{ movie.vote_average|default:'N/A' }} • {{ movie.release_date.year|default:'N/A' }}
+            </div>
+            <div class="w-full h-full bg-gradient-to-t from-synapse-bg/95 to-transparent flex items-end p-3">
                 <p class="text-white text-sm font-semibold truncate">{{ movie.title }}</p>
             </div>
         </div>
@@ -220,24 +249,28 @@
 {% for genre, movies in genre_sections.items %}
 <section class="py-10 px-5">
     <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold flex items-center">
+        <h2 class="text-xl font-bold flex items-center text-synapse-text">
             <span class="text-gray-400 mr-2">🎬</span> {{ genre }}
         </h2>
-        <a href="{% url 'genre' genre %}" class="text-cyan-500 hover:text-cyan-400 font-semibold flex items-center text-sm">
+        <a href="{% url 'genre' genre %}" class="text-synapse-accent hover:brightness-110 font-semibold flex items-center text-sm">
             See more →
         </a>
     </div>
 
     <div class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory custom-scroll">
         {% for movie in movies %}
-        <div class="snap-start flex-shrink-0 w-40 md:w-48 cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg"
+        <div class="movie-cardsnap-start flex-shrink-0 w-40 md:w-48 cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg relative group"
             data-slug="{{ movie.slug }}" data-id="{{ movie.id }}" data-title="{{ movie.title }}"
             data-description="{{ movie.overview|truncatewords:60 }}" data-year="{{ movie.release_date.year|default:'N/A' }}" 
             data-genre="{{ genre }}"
+            data-rating="{{ movie.vote_average|default:'N/A' }}"
             data-poster="{{ movie.poster_url|default:'' }}" data-backdrop="{{ movie.backdrop_url|default:'' }}"
             data-play-url="{% url 'movie_detail' movie.slug %}" onclick="showModal(this)" 
             style="background-image: url('{{ movie.poster_url }}'); background-size: cover; background-position: center; height: 240px;">
-            <div class="w-full h-full bg-gradient-to-t from-black/70 to-transparent flex items-end p-3">
+            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-synapse-card text-white text-xs rounded opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-20">
+                ⭐ {{ movie.vote_average|default:'N/A' }} • {{ movie.release_date.year|default:'N/A' }}
+            </div>
+            <div class="w-full h-full bg-gradient-to-t from-synapse-bg/95 to-transparent flex items-end p-3">
                 <p class="text-white text-sm font-semibold truncate">{{ movie.title }}</p>
             </div>
         </div>

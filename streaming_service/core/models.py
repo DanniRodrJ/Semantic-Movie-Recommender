@@ -20,6 +20,7 @@ class Actor(models.Model):
 class Movie(models.Model):
     tmdb_id = models.PositiveIntegerField(unique=True, null=True, blank=True)
     title = models.CharField(max_length=255, db_index=True)
+    runtime = models.IntegerField(null=True, blank=True, help_text="Runtime in minutes")
     slug = models.SlugField(max_length=255, unique=True, blank=True, null=True)
     overview = models.TextField(blank=True)
     release_date = models.DateField(null=True, blank=True)
@@ -99,13 +100,26 @@ class Movie(models.Model):
         ordering = ['-popularity', '-vote_average', 'title']
         
 class UserProfile(models.Model):
+    
+    AVATAR_CHOICES = [
+        ('bottts', 'AI Robot'),
+        ('identicon', 'Geometric Pattern'),
+        ('pixel-art', 'Pixel Art'),
+        ('shapes', 'Abstract Forms'),
+    ]
+    
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='profile')
     preference_vector = VectorField(dimensions=768, null=True, blank=True)
     preference_tokens = models.IntegerField(default=0, help_text="Tokens spent on Gemini")
     has_completed_onboarding = models.BooleanField(default=False)
+    avatar_style = models.CharField(max_length=20, choices=AVATAR_CHOICES, default='bottts')
 
     def __str__(self):
         return f"Profile of {self.user.username}"
+    
+    @property
+    def avatar_url(self):
+        return f"https://api.dicebear.com/7.x/{self.avatar_style}/svg?seed={self.user.username}"
 
     def update_preference_vector(self):
         """Calculate the centroid by combining Favorites (weight 3) and History (weight 1)"""

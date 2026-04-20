@@ -1,46 +1,60 @@
+/* SYNAPSE GLOBAL STYLING
+   Rule of 3 Colors: 
+   60% Dominant: #050a30 (Deep Navy)
+   30% Secondary: #ffffff (White/Text)
+   10% Accent: #0ea5e9 (Cyan)
+*/
+
+:root {
+    --primary-bg: #050a30;
+    --secondary-text: #94a3b8;
+    --accent-color: #0ea5e9;
+    --white: #ffffff;
+}
+
 body, html {
     margin: 0;
     padding: 0;
     height: 100%;
-    font-family: Arial, sans-serif;
+    font-family: 'Inter', -apple-system, Arial, sans-serif;
+    background-color: var(--primary-bg);
 }
 
 .bg-image {
-    background-image: url("https://assets.nflxext.com/ffe/siteui/vlv3/ab4b0b22-2ddf-4d48-ae88-c201ae0267e2/c8f1b665-bd37-400d-950f-413cb99552ec/GB-en-20231030-popsignuptwoweeks-perspective_alpha_website_large.jpg");
-    background-size: cover;
-    background-position: center;
-    position: relative;
+    background-color: var(--primary-bg);
     height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
     z-index: 1;
 }
 
-.bg-image::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    background: rgba(0, 0, 0, 0.4);
-    z-index: -1;
-}
-
+/* Container with glassmorphism effect */
 .signup-container {
     width: 100%;
     max-width: 450px;
     margin: auto;
-    position: relative;
-    top: 50%;
-    transform: translateY(-50%);
-    padding: 60px 68px 40px;
-    background-color: rgba(0, 0, 0, 0.9);
-    color: #fff;
+    padding: 60px 50px;
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    color: var(--white);
     box-sizing: border-box;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
 .signup-container h1 {
     font-size: 32px;
     font-weight: 700;
+    margin-bottom: 10px;
+    text-align: left;
+}
+
+.signup-container h2 {
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--secondary-text);
     margin-bottom: 28px;
 }
 
@@ -49,41 +63,62 @@ body, html {
     flex-direction: column;
 }
 
-.signup-container input {
-    background: #333;
-    border: 0;
-    color: #fff;
+.signup-container input, .signup-container select {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+    color: var(--white);
     height: 50px;
-    line-height: 50px;
-    padding: 16px 20px;
+    padding: 0 20px;
     margin-bottom: 20px;
+    font-size: 15px;
+    transition: all 0.3s ease;
+}
+
+.signup-container input:focus, .signup-container select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .signup-container .signup-btn {
-    background: #e50914;
+    background: var(--accent-color);
+    color: var(--white);
     font-weight: 700;
     border: none;
     outline: none;
     padding: 16px;
     font-size: 16px;
     cursor: pointer;
+    border-radius: 6px;
+    transition: filter 0.2s ease;
 }
 
 .signup-container .signup-btn:hover {
-    background: #f40612;
+    filter: brightness(1.1);
 }
 
 .signup-container .help-text {
-    color: #b3b3b3;
-    font-size: 13px;
+    color: var(--secondary-text);
+    font-size: 14px;
     margin-top: 24px;
+    text-align: center;
 }
 
 .signup-container .help-text a {
-    color: #b3b3b3;
+    color: var(--accent-color);
     text-decoration: none;
+    font-weight: 600;
 }
 
 .signup-container .help-text a:hover {
     text-decoration: underline;
+}
+
+/* Error messages styling */
+h5 {
+    color: #ef4444;
+    font-size: 14px;
+    font-weight: normal;
+    margin-bottom: 15px;
 }

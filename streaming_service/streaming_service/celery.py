@@ -8,7 +8,7 @@ app = Celery('streaming_service')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 app.autodiscover_tasks()
 
-sync_hour = os.getenv('CELERY_SYNC_HOUR', '3')
+sync_hour = os.getenv('CELERY_SYNC_HOUR', '0')
 sync_minute = os.getenv('CELERY_SYNC_MINUTE', '0')
 sync_week = os.getenv('CELERY_SYNC_WEEK', '0')
 

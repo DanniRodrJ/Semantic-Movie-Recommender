@@ -62,6 +62,7 @@ def fetch_and_vectorize_movies(pages=3, language='en-US'):
             details = details_resp.json()
 
             title = details.get('title', '')
+            runtime = details.get('runtime')
             overview = details.get('overview', '')
             release_date = details.get('release_date') or None
             release_year = release_date.split('-')[0] if release_date else 'Unknown'
@@ -131,6 +132,7 @@ def fetch_and_vectorize_movies(pages=3, language='en-US'):
                     'vote_average': vote_average,
                     'popularity': popularity,
                     'video_url': video_url,
+                    'runtime': runtime,
                     'embedding': vector,
                     'embedding_tokens': tokens_used if vector is not None else 0,
                 }

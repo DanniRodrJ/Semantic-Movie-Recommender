@@ -8,7 +8,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Synapse{% endblock %}</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        synapse: {
+                            bg: '#050a30',      
+                            text: '#ffffff',   
+                            accent: '#0ea5e9',  
+                            card: '#0a1142'   
+                        }
+                    }
+                }
+            }
+        }
+    </script>
     <link rel="stylesheet" href="{% static 'assets/styles.css' %}">
     <link rel="stylesheet" href="{% static 'assets/login.css' %}">
 
@@ -17,55 +33,55 @@
     {% block extra_head %}{% endblock %}
 </head>
 
-<body class="text-white" style="background-color: #141414;">
+<body class="text-synapse-text bg-synapse-bg">
     {% block header %}
-    <header class="sticky top-0 z-50 px-6 py-4 md:px-10 flex justify-between items-center bg-black bg-opacity-90 backdrop-blur-md border-b border-gray-800 transition-all duration-300">
+    <header class="sticky top-0 z-50 px-6 py-4 md:px-10 flex justify-between items-center bg-synapse-bg/90 backdrop-blur-md border-b border-gray-800 transition-all duration-300">
         <div class="flex items-center space-x-10">
             <a href="{% url 'home' %}">
-                <img src="{% static 'assets/images/logo3.png' %}" alt="Synapse Logo" class="h-8 md:h-10 w-auto object-contain">
+                <img src="{% static 'assets/images/logo4.png' %}" alt="Synapse Logo" class="h-8 md:h-10 w-auto object-contain">
             </a>
 
             <nav class="hidden md:flex items-center space-x-6 text-sm font-medium text-gray-300">
-                <a href="{% url 'home' %}" class="hover:text-cyan-400 transition-colors duration-200">Home</a>
+                <a href="{% url 'home' %}" class="hover:text-synapse-accent transition-colors duration-200">Home</a>
 
                 <div class="dropdown relative">
-                    <button id="dropdownMenuButton" class="flex items-center space-x-1 hover:text-cyan-400 transition-colors duration-200 focus:outline-none">
+                    <button id="dropdownMenuButton" class="flex items-center space-x-1 hover:text-synapse-accent transition-colors duration-200 focus:outline-none">
                         <span>Genres</span>
                         <svg class="w-4 h-4 transition-transform duration-200" id="dropdownArrow" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                         </svg>
                     </button>
 
-                    <div id="dropdownMenu" class="hidden absolute left-0 mt-6 w-48 bg-gray-900 border border-gray-700 rounded-md shadow-2xl py-2 z-50">
-                        <a href="{% url 'genre' 'Action' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-cyan-400 transition">Action</a>
-                        <a href="{% url 'genre' 'Comedy' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-cyan-400 transition">Comedy</a>
-                        <a href="{% url 'genre' 'Drama' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-cyan-400 transition">Drama</a>
-                        <a href="{% url 'genre' 'Horror' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-cyan-400 transition">Horror</a>
-                        <a href="{% url 'genre' 'Romance' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-cyan-400 transition">Romance</a>
-                        <a href="{% url 'genre' 'Science Fiction' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-cyan-400 transition">Science Fiction</a>
-                        <a href="{% url 'genre' 'Fantasy' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-cyan-400 transition">Fantasy</a>
+                    <div id="dropdownMenu" class="hidden absolute left-0 mt-6 w-48 bg-synapse-card border border-gray-700 rounded-md shadow-2xl py-2 z-50">
+                        <a href="{% url 'genre' 'Action' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-synapse-accent transition">Action</a>
+                        <a href="{% url 'genre' 'Comedy' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-synapse-accent transition">Comedy</a>
+                        <a href="{% url 'genre' 'Drama' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-synapse-accent transition">Drama</a>
+                        <a href="{% url 'genre' 'Horror' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-synapse-accent transition">Horror</a>
+                        <a href="{% url 'genre' 'Romance' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-synapse-accent transition">Romance</a>
+                        <a href="{% url 'genre' 'Science Fiction' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-synapse-accent transition">Science Fiction</a>
+                        <a href="{% url 'genre' 'Fantasy' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-synapse-accent transition">Fantasy</a>
                     </div>
                 </div>
 
-                <a href="{% url 'my_list' %}" class="hover:text-cyan-400 transition-colors duration-200">My List</a>
+                <a href="{% url 'my_list' %}" class="hover:text-synapse-accent transition-colors duration-200">My List</a>
             </nav>
         </div>
 
         <div class="flex items-center space-x-6">
             <form action="{% url 'search' %}" method="GET" class="relative hidden sm:block">
                 <input type="search" name="q" placeholder="Titles, people, genres..." 
-                       class="bg-gray-900 border border-gray-700 text-sm rounded-full focus:ring-cyan-500 focus:border-cyan-500 block w-64 px-4 py-2 placeholder-gray-500 focus:outline-none transition-all duration-300">
-                <button type="submit" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-cyan-400">
+                       class="bg-synapse-card border border-gray-700 text-sm rounded-full focus:ring-synapse-accent focus:border-synapse-accent block w-64 px-4 py-2 placeholder-gray-500 focus:outline-none transition-all duration-300">
+                <button type="submit" class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-synapse-accent">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </button>
             </form>
 
             <div class="relative">
-                <button id="profileMenuButton" class="w-8 h-8 rounded border-2 border-transparent hover:border-cyan-400 overflow-hidden transition-all duration-200 focus:outline-none block cursor-pointer">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/0/0b/Netflix-avatar.png" alt="Profile" class="w-full h-full object-cover">
+                <button id="profileMenuButton" class="w-8 h-8 rounded border-2 border-transparent hover:border-synapse-accent overflow-hidden transition-all duration-200 focus:outline-none block cursor-pointer">
+                    <img src="{{ request.user.profile.avatar_url }}" alt="User Avatar" style="width: 35px; height: 35px; border-radius: 50%;">
                 </button>
 
-                <div id="profileMenu" class="hidden absolute right-0 mt-4 w-40 bg-gray-900 border border-gray-700 rounded-md shadow-2xl py-2 z-50">
+                <div id="profileMenu" class="hidden absolute right-0 mt-4 w-40 bg-synapse-card border border-gray-700 rounded-md shadow-2xl py-2 z-50">
                     <p class="px-4 py-3 text-xs text-gray-400 border-b border-gray-800">Hi, {{ user.username }}</p>
                     <a href="{% url 'logout' %}" class="block px-4 py-3 text-sm text-gray-300 hover:bg-gray-800 hover:text-red-500 transition">Sign Out</a>
                 </div>
@@ -77,31 +93,54 @@
     
     {% block content %}{% endblock %}
 
-    <div id="movieModal" class="fixed inset-0 bg-black bg-opacity-80 items-center justify-center z-50" style="display: none;">
-        <div class="bg-gray-900 rounded-lg p-6 max-w-3xl w-full mx-4 relative shadow-2xl border border-gray-700">
-            <div class="flex justify-between items-center mb-4">
+        <div id="movieModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm items-center justify-center z-50 transition-all duration-300" style="display: none;">
+        <div class="bg-synapse-bg rounded-xl max-w-4xl w-full mx-4 relative shadow-[0_20px_50px_rgba(0,0,0,0.7)] border border-gray-600/50 transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+            <div class="flex justify-between items-center mb-4 p-6 pb-0">
                 <h2 id="modalTitle" class="text-3xl font-bold text-white"></h2>
                 <button onclick="hideModal()" class="text-gray-400 text-3xl hover:text-white transition focus:outline-none">&times;</button>
             </div>
 
-            <img id="modalImage" class="w-full h-64 object-cover rounded-lg mb-4 shadow-inner" src="" alt="Movie Cover">
+            <img id="modalImage" class="w-full h-72 object-cover mb-4 shadow-inner" src="" alt="Movie Cover">
 
-            <div class="flex justify-between mb-4 text-cyan-400 font-semibold text-sm tracking-wide uppercase">
-                <span id="modalYear"></span>
-                <span id="modalGenre"></span>
-            </div>
+            <div class="px-6">
+                <div class="grid grid-cols-2 gap-4 mb-4 text-sm">
+                    <div class="flex items-center space-x-2 text-gray-400">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"/>
+                        </svg>
+                        <span id="modalDuration">Duración: N/A</span>
+                    </div>
+                    <div class="flex items-center space-x-2 text-gray-400">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9zM4 5a2 2 0 012-2h.5a1 1 0 000-2H6a4 4 0 00-4 4v.5a1 1 0 002 0V5zm12 0v.5a1 1 0 002 0V5a4 4 0 00-4-4h-.5a1 1 0 000 2H16a2 2 0 012 2zM5 14a2 2 0 01-2-2v-.5a1 1 0 00-2 0V12a4 4 0 004 4h.5a1 1 0 000-2H5zm10 0h-.5a1 1 0 000 2H16a4 4 0 004-4v-.5a1 1 0 00-2 0V12a2 2 0 01-2 2z"/>
+                        </svg>
+                        <span id="modalRating">Average: N/A</span>
+                    </div>
+                </div>
 
-            <p id="modalDescription" class="mb-8 text-gray-300 leading-relaxed"></p>
+                <div class="flex justify-between mb-4 text-synapse-accent font-semibold text-sm tracking-wide uppercase">
+                    <span id="modalYear"></span>
+                    <span id="modalGenre"></span>
+                </div>
 
-            <div class="flex space-x-4">
-                <a id="modalPlayLink" href="#">
-                    <button class="bg-cyan-500 text-black px-8 py-3 rounded font-bold hover:bg-cyan-400 transition shadow-[0_0_15px_rgba(6,182,212,0.4)]">Play</button>
-                </a>
-                <button id="addToListButton" class="border-2 border-gray-500 text-white px-8 py-3 rounded font-bold hover:bg-gray-700 hover:border-gray-400 transition">
-                    + My List
-                </button>
+                <p id="modalDescription" class="mb-8 text-gray-300 leading-relaxed"></p>
+
+                <div class="flex space-x-4 mb-6">
+                    <a id="modalPlayLink" href="#">
+                        <button class="bg-synapse-accent text-white px-8 py-3 rounded font-bold hover:bg-cyan-400 transition shadow-[0_0_15px_rgba(6,182,212,0.4)]">
+                            ▶ Play
+                        </button>
+                    </a>
+                    <button id="addToListButton" class="border-2 border-gray-500 text-white px-8 py-3 rounded font-bold hover:bg-gray-700 hover:border-gray-400 transition">
+                        + My List
+                    </button>
+                </div>
             </div>
         </div>
+    </div>
+
+    <div id="toast" class="fixed bottom-5 right-5 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-full opacity-0 transition-all duration-300 z-50">
+        <span id="toastMessage"></span>
     </div>
 
     <script>
@@ -114,6 +153,7 @@
                 const description = element.getAttribute('data-description') || 'No description available.';
                 const year = element.getAttribute('data-year') || '';
                 const genre = element.getAttribute('data-genre') || '';
+                const rating = element.getAttribute('data-rating') || 'N/A';
                 const poster = element.getAttribute('data-poster');
                 const backdrop = element.getAttribute('data-backdrop');
                 const playUrl = element.getAttribute('data-play-url');
@@ -122,6 +162,7 @@
                 document.getElementById('modalImage').src = backdrop || poster || '';
                 document.getElementById('modalYear').textContent = year;
                 document.getElementById('modalGenre').textContent = genre;
+                document.getElementById('modalRating').textContent = 'Average: ' + rating + ' ⭐';
                 document.getElementById('modalDescription').textContent = description;
 
                 const playLink = document.getElementById('modalPlayLink');
@@ -133,16 +174,36 @@
                 const addBtn = document.getElementById('addToListButton');
                 if (addBtn) addBtn.setAttribute('data-slug', slug);
 
-                // Forzar apertura nativa
-                document.getElementById('movieModal').style.display = 'flex';
-                document.body.style.overflow = 'hidden'; // Evita scroll de fondo
+                const modal = document.getElementById('movieModal');
+                const modalContent = document.getElementById('modalContent');
+                
+                modal.style.display = 'flex';
+                setTimeout(() => {
+                    modalContent.classList.remove('scale-95', 'opacity-0');
+                    modalContent.classList.add('scale-100', 'opacity-100');
+                }, 10);
+                
+                document.body.style.overflow = 'hidden';
             } catch (error) {
                 console.error("Error modal:", error);
             }
         }
 
         function hideModal() {
-            document.getElementById('movieModal').style.display = 'none';
+            const modal = document.getElementById('movieModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            if (modalContent) {
+                modalContent.classList.add('scale-95', 'opacity-0');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    if (modalContent) {
+                        modalContent.classList.remove('scale-100', 'opacity-100');
+                    }
+                }, 300);
+            } else {
+                modal.style.display = 'none';
+            }
             document.body.style.overflow = 'auto';
         }
 
@@ -196,8 +257,10 @@
                         success: function (data) {
                             if (data.status === 'added') {
                                 $(addToListBtn).text('✓ In My List').removeClass('border-gray-500').addClass('border-green-500 text-green-400');
+                                showToast('Added to your list!', 'success');
                             } else {
                                 $(addToListBtn).text('+ My List').removeClass('border-green-500 text-green-400').addClass('border-gray-500');
+                                showToast('Removed from your list', 'info');
                             }
                         }
                     });
@@ -218,15 +281,34 @@
                 });
             }
         });
+
+        function showToast(message, type = 'success') {
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            
+            toast.className = `fixed bottom-5 right-5 ${type === 'success' ? 'bg-green-600' : 'bg-red-600'} text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-0 opacity-100 transition-all duration-300 z-50`;
+            toastMessage.textContent = message;
+            
+            setTimeout(() => {
+                toast.classList.add('translate-y-full', 'opacity-0');
+            }, 3000);
+        }
     </script>
     {% block extra_js %}{% endblock %}
-    <footer class="bg-black/90 border-t border-gray-800 mt-20 py-10 px-5">
+        <!-- Footer -->
+    <footer class="bg-synapse-card border-t border-gray-800/50 mt-20 py-10 px-5">
         <div class="max-w-7xl mx-auto">
             <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
                 <div class="flex space-x-6">
-                    <a href="#" class="text-gray-400 hover:text-cyan-400 transition text-sm">Terms of Use</a>
-                    <a href="#" class="text-gray-400 hover:text-cyan-400 transition text-sm">Privacy</a>
-                    <a href="#" class="text-gray-400 hover:text-cyan-400 transition text-sm">Contact</a>
+                    <a href="#" class="text-gray-400 hover:text-synapse-accent transition text-sm">Terms of Use</a>
+                    <a href="#" class="text-gray-400 hover:text-synapse-accent transition text-sm">Privacy</a>
+                    <a href="#" class="text-gray-400 hover:text-synapse-accent transition text-sm">Contact</a>
+                    <a href="https://www.linkedin.com/in/danniela-rodriguez-jove-/" target="_blank" class="text-gray-400 hover:text-synapse-accent transition text-sm flex items-center space-x-1">
+                        <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451c.979 0 1.771-.773 1.771-1.729V1.729C24 .774 23.222 0 22.225 0z"/>
+                        </svg>
+                        <span>LinkedIn</span>
+                    </a>
                 </div>
                 <p class="text-gray-500 text-sm">© 2026 Synapse. All rights reserved.</p>
             </div>
