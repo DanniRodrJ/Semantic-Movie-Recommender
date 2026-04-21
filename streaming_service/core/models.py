@@ -163,3 +163,21 @@ class WatchHistory(models.Model):
 
     class Meta:
         ordering = ['-watched_at']       
+        
+        
+        
+class SearchAnalytics(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True)
+    query = models.CharField(max_length=500)
+    latency_ms = models.FloatField(help_text="Execution time in milliseconds")
+    tokens_used = models.IntegerField(default=0)
+    estimated_cost_usd = models.DecimalField(max_digits=10, decimal_places=6, default=0.0)
+    results_count = models.IntegerField(default=0)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name_plural = "Search Analytics"
+
+    def __str__(self):
+        return f"[{self.timestamp.strftime('%Y-%m-%d %H:%M')}] {self.query} ({self.latency_ms}ms)"
