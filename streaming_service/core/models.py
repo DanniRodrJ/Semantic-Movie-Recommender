@@ -181,3 +181,20 @@ class SearchAnalytics(models.Model):
 
     def __str__(self):
         return f"[{self.timestamp.strftime('%Y-%m-%d %H:%M')}] {self.query} ({self.latency_ms}ms)"
+    
+    
+class PipelineAnalytics(models.Model):
+    task_name = models.CharField(max_length=255, default="fetch_and_vectorize_movies")
+    movies_processed = models.IntegerField(default=0)
+    total_tokens_used = models.IntegerField(default=0)
+    estimated_cost_usd = models.DecimalField(max_digits=10, decimal_places=6, default=0.0)
+    execution_time_seconds = models.FloatField(help_text="Total duration of the script")
+    status = models.CharField(max_length=50, default="Success")
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        verbose_name_plural = "Pipeline Analytics"
+
+    def __str__(self):
+        return f"[{self.timestamp.strftime('%Y-%m-%d %H:%M')}] {self.movies_processed} movies | Cost: ${self.estimated_cost_usd}"

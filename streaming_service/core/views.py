@@ -194,47 +194,47 @@ class GenreListView(LoginRequiredMixin, list.ListView):
 
 
 @measure_hybrid_search
-def execute_rrf_search(query):
+def execute_rrf_search(query, user=None):
     # LEXICAL SEARCH
-        qs_lexical = Movie.objects.filter(title__icontains=query)
-        lexical_results = [m for m in qs_lexical]
+    qs_lexical = Movie.objects.filter(title__icontains=query)
+    lexical_results = [m for m in qs_lexical]
 
-        # SEMANTIC SEARCH (Embeddings)
-        semantic_results = []
-        vector, _ = generate_multimodal_embedding(
-            text_overview=query, 
-            image_url=None, 
-            task_type="RETRIEVAL_QUERY"
-        )
+    # SEMANTIC SEARCH (Embeddings)
+    semantic_results = []
+    vector, _ = generate_multimodal_embedding(
+        text_overview=query, 
+        image_url=None, 
+        task_type="RETRIEVAL_QUERY"
+    )
 
-        if vector:
-            semantic_qs = Movie.objects.filter(
-                embedding__isnull=False
-            ).order_by(
-                CosineDistance('embedding', vector)
-            )[:20]
-            semantic_results = [m for m in semantic_qs]
-            
-        # RECIPROCAL RANK FUSION (RRF) score = 1 / (k + rank)
-        rrf_scores = {}
-        k = 60
+    if vector:
+        semantic_qs = Movie.objects.filter(
+            embedding__isnull=False
+        ).order_by(
+            CosineDistance('embedding', vector)
+        )[:20]
+        semantic_results = [m for m in semantic_qs]
         
-        # Score lexical results 
-        for rank, movie in enumerate(lexical_results):
-            if movie.id not in rrf_scores:
-                rrf_scores[movie.id] = {'movie': movie, 'score': 0.0}
-            rrf_scores[movie.id]['score'] += 1.0 / (k + rank + 1)
-            
-        # Score semantic results
-        for rank, movie in enumerate(semantic_results):
-            if movie.id not in rrf_scores:
-                rrf_scores[movie.id] = {'movie': movie, 'score': 0.0}
-            rrf_scores[movie.id]['score'] += 1.0 / (k + rank + 1)
-
-        sorted_rrf = sorted(rrf_scores.values(), key=lambda x: x['score'], reverse=True)
-        final_movies = [item['movie'] for item in sorted_rrf][:15]
+    # RECIPROCAL RANK FUSION (RRF) score = 1 / (k + rank)
+    rrf_scores = {}
+    k = 60
+    
+    # Score lexical results 
+    for rank, movie in enumerate(lexical_results):
+        if movie.id not in rrf_scores:
+            rrf_scores[movie.id] = {'movie': movie, 'score': 0.0}
+        rrf_scores[movie.id]['score'] += 1.0 / (k + rank + 1)
         
-        return final_movies, query
+    # Score semantic results
+    for rank, movie in enumerate(semantic_results):
+        if movie.id not in rrf_scores:
+            rrf_scores[movie.id] = {'movie': movie, 'score': 0.0}
+        rrf_scores[movie.id]['score'] += 1.0 / (k + rank + 1)
+
+    sorted_rrf = sorted(rrf_scores.values(), key=lambda x: x['score'], reverse=True)
+    final_movies = [item['movie'] for item in sorted_rrf][:15]
+    
+    return final_movies, query
 
 class SearchView(LoginRequiredMixin, list.ListView):
     model = Movie
@@ -247,7 +247,7 @@ class SearchView(LoginRequiredMixin, list.ListView):
         if not query:
             return Movie.objects.none()
         
-        movies, _ = execute_rrf_search(query)
+        movies, _ = execute_rrf_search(query=query, user=self.request.user)
         return movies
 
     def get_context_data(self, **kwargs):
@@ -347,9 +347,11 @@ class SignupView(base.TemplateView):
 
         user = models.User.objects.create_user(username=username, email=email, password=password)
         user.save()
+        
+        avatar_style = request.POST.get('avatar_style', 'bottts')
 
         # Blank vector outline
-        UserProfile.objects.create(user=user)
+        UserProfile.objects.create(user=user, avatar_style=avatar_style)
 
         login(request, user)
         return redirect('onboarding')
