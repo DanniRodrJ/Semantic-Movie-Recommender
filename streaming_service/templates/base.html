@@ -131,9 +131,18 @@
                             ▶ Play
                         </button>
                     </a>
+
                     <button id="addToListButton" class="border-2 border-gray-500 text-white px-8 py-3 rounded font-bold hover:bg-gray-700 hover:border-gray-400 transition">
                         + My List
                     </button>
+
+                    <div class="flex bg-synapse-card border border-gray-700 rounded overflow-hidden h-[52px]"> <button onclick="sendFeedback('up')" id="btn-up" class="px-4 hover:bg-green-600/20 text-gray-400 hover:text-green-400 transition border-r border-gray-700 flex items-center justify-center" title="Me gusta">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.757c1.246 0 2.25 1.004 2.25 2.25v.743c0 1.246-1.004 2.25-2.25 2.25h-4.757c-.133 0-.25.102-.25.235v2.515c0 1.246-1.004 2.25-2.25 2.25H6.25c-1.246 0-2.25-1.004-2.25-2.25v-8.25c0-1.246 1.004-2.25 2.25-2.25h1.515c.133 0 .25-.102.25-.235V4.25c0-1.246 1.004-2.25 2.25-2.25h1.5c1.246 0 2.25 1.004 2.25 2.25v5.515c0 .133.102.25.235.25z"/></svg>
+                        </button>
+                        <button onclick="sendFeedback('down')" id="btn-down" class="px-4 hover:bg-red-600/20 text-gray-400 hover:text-red-400 transition flex items-center justify-center" title="No me gusta">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.243c-1.246 0-2.25-1.004-2.25-2.25v-.743c0-1.246 1.004-2.25 2.25-2.25h4.757c.133 0 .25-.102.25-.235V6.007c0-1.246 1.004-2.25 2.25-2.25h1.5c1.246 0 2.25 1.004 2.25 2.25v8.25c0 1.246-1.004 2.25-2.25 2.25H12.25c-.133 0-.25.102-.25.235v2.515c0 1.246-1.004 2.25-2.25 2.25h-1.5c-1.246 0-2.25-1.004-2.25-2.25v-5.515c0-.133-.102-.25-.235-.25z"/></svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -292,6 +301,50 @@
             setTimeout(() => {
                 toast.classList.add('translate-y-full', 'opacity-0');
             }, 3000);
+        }
+
+        function sendFeedback(voteType) {
+            // 1. Obtenemos el ID de la película desde el botón Play
+            const playLink = document.getElementById('modalPlayLink');
+            const movieId = playLink.getAttribute('data-movie-id');
+
+            if (!movieId) {
+                console.error("No se encontró el ID de la película");
+                return;
+            }
+
+            // 2. Enviamos la petición POST a Django
+            fetch("{% url 'movie_feedback' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    movie_id: movieId,
+                    vote: voteType
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    // Mostramos el Toast verde de éxito que ya tienes programado
+                    showToast(data.message, 'success');
+                    
+                    // Efecto visual: iluminar el botón que presionó
+                    document.getElementById('btn-up').classList.remove('text-green-400', 'bg-green-600/20');
+                    document.getElementById('btn-down').classList.remove('text-red-400', 'bg-red-600/20');
+                    
+                    if(voteType === 'up') {
+                        document.getElementById('btn-up').classList.add('text-green-400', 'bg-green-600/20');
+                    } else {
+                        document.getElementById('btn-down').classList.add('text-red-400', 'bg-red-600/20');
+                    }
+                } else {
+                    showToast('Error al enviar feedback', 'error');
+                }
+            })
+            .catch(error => console.error('Error:', error));
         }
     </script>
     {% block extra_js %}{% endblock %}

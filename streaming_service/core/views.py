@@ -401,3 +401,32 @@ class LogoutView(base.View):
     def get(self, request, *args, **kwargs):
         logout(request)
         return redirect('login')
+    
+    
+class FeedbackView(LoginRequiredMixin, base.View):
+    def post(self, request, *args, **kwargs):
+        try:
+            data = json.loads(request.body)
+            movie_id = data.get('movie_id')
+            vote = data.get('vote') # 'up' o 'down'
+            movie = get_object_or_404(Movie, id=movie_id)
+            
+            profile = request.user.profile
+            
+            if vote == 'up':
+                # Pulgar arriba = A la lista de favoritos (+3 peso)
+                request.user.favorite_movies.add(movie)
+                profile.disliked_movies.remove(movie)
+                action_msg = "¡Agregado a tus gustos!"
+            else:
+                # Pulgar abajo = A la lista de dislikes (-2 peso)
+                profile.disliked_movies.add(movie)
+                request.user.favorite_movies.remove(movie)
+                action_msg = "Recomendación descartada."
+
+            # Disparamos la actualización del vector matemático
+            profile.update_preference_vector()
+            
+            return JsonResponse({'status': 'success', 'message': action_msg})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=400)

@@ -15,4 +15,5 @@ urlpatterns = [
     path('my_list', views.MyListView.as_view(), name='my_list'),
     path('toggle_favorite/', views.ToggleFavoriteView.as_view(), name='toggle_favorite'),
     path('record_watch/', views.RecordWatchView.as_view(), name='record_watch'),
+    path('feedback/', views.FeedbackView.as_view(), name='movie_feedback'),
 ]

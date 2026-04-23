@@ -113,7 +113,8 @@ class UserProfile(models.Model):
     preference_tokens = models.IntegerField(default=0, help_text="Tokens spent on Gemini")
     has_completed_onboarding = models.BooleanField(default=False)
     avatar_style = models.CharField(max_length=20, choices=AVATAR_CHOICES, default='bottts')
-
+    disliked_movies = models.ManyToManyField('Movie', related_name='disliked_by', blank=True)
+    
     def __str__(self):
         return f"Profile of {self.user.username}"
     
@@ -122,7 +123,7 @@ class UserProfile(models.Model):
         return f"https://api.dicebear.com/7.x/{self.avatar_style}/svg?seed={self.user.username}"
 
     def update_preference_vector(self):
-        """Calculate the centroid by combining Favorites (weight 3) and History (weight 1)"""
+        """Calculate the centroid by combining Favorites (+3), History (+1) and Dislikes (-2)"""
         vectors = []
         weights = []
 
@@ -140,16 +141,39 @@ class UserProfile(models.Model):
             movie__embedding__isnull=False
         ).select_related('movie').order_by('-watched_at')[:50]
 
+        history_ids = set()
         for item in history:
             # Only add if not in favorites (to avoid duplicate calculations)
             if item.movie.id not in fav_ids:
                 vectors.append(np.array(item.movie.embedding))
                 weights.append(1.0) # Normal weight
+                history_ids.add(item.movie.id)
+                
+        # 3. Dislikes
+        dislikes = self.disliked_movies.filter(embedding__isnull=False)
+        for movie in dislikes:
+            vectors.append(np.array(movie.embedding))
+            weights.append(-2.0)
 
         # 3. Vector math
         if vectors:
-            centroid = np.average(vectors, weights=weights, axis=0)
-            self.preference_vector = centroid.tolist()
+            weighted_sum = np.zeros(768)
+            total_weight_abs = 0.0
+            
+            for v, w in zip(vectors, weights):
+                weighted_sum += v * w
+                total_weight_abs += abs(w)
+                
+            if total_weight_abs > 0:
+                centroid = weighted_sum / total_weight_abs
+                
+                norm = np.linalg.norm(centroid)
+                if norm > 0:
+                    centroid = centroid / norm
+                    
+                self.preference_vector = centroid.tolist()
+            else:
+                self.preference_vector = None
         else:
             self.preference_vector = None
             
