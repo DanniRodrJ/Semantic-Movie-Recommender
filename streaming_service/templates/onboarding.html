@@ -1,69 +1,153 @@
 {% extends 'base.html' %}
 
-{% block header %}
-<div class="p-5 flex justify-center bg-black">
-    <img src="{% static 'assets/logo.png' %}" height="30" alt="Synapse Logo" width="110">
+{% load static %} {% block header %}
+<div class="p-5 flex justify-center bg-synapse-bg border-b border-gray-800">
+    <img src="{% static 'assets/images/logo4.png' %}" height="30" alt="Synapse Logo" style="height: 40px; width: auto;">
 </div>
 {% endblock %}
 
 {% block content %}
 {% csrf_token %}
 
-<div class="min-h-screen bg-black text-white pt-10 px-5 md:px-20">
-    <div class="max-w-6xl mx-auto text-center mb-10">
-        <h1 class="text-4xl md:text-5xl font-bold mb-4">Customize your experience</h1>
-        <p class="text-gray-400 text-lg">Select at least 3 movies (maximum 10) to train your recommender.
-        </p>
-
-        <div id="counter-badge"
-            class="mt-4 inline-block bg-cyan-500 px-4 py-1 rounded-full text-sm font-bold opacity-0 transition-opacity">
-            <span id="selected-count">0</span> selected
+<div class="min-h-screen bg-synapse-bg text-white pt-10 px-5 md:px-20 pb-32 overflow-x-hidden">
+    
+    <div class="flex justify-center mb-12">
+        <div class="flex items-center space-x-4">
+            <div id="step1-indicator" class="w-10 h-10 rounded-full bg-synapse-accent flex items-center justify-center font-bold text-white shadow-[0_0_15px_rgba(14,165,233,0.5)] transition-all duration-300">1</div>
+            <div class="h-1 w-16 md:w-32 bg-gray-700 transition-colors duration-500" id="step-divider"></div>
+            <div id="step2-indicator" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center font-bold text-gray-500 transition-all duration-500">2</div>
         </div>
     </div>
 
-    <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 pb-32" id="movie-grid">
-        {% for movie in movies %}
-        <div class="movie-card relative cursor-pointer group transition-all duration-500 transform {% if forloop.counter > 18 %}hidden reserve-movie{% endif %}"
-            data-id="{{ movie.id }}" onclick="toggleSelect(this)">
+    <section id="step1-container" class="max-w-4xl mx-auto transition-all duration-500 transform">
+        <div class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-4 text-white">Choose your Avatar</h1>
+            <p class="text-gray-400 text-lg">Select an identity that fits your style.</p>
+        </div>
 
-            <img src="{{ movie.poster_url }}" alt="{{ movie.title }}"
-                class="rounded-lg border-4 border-transparent w-full h-full object-cover shadow-lg">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
+            <label class="group cursor-pointer">
+                <input type="radio" name="avatar_style" value="bottts" class="hidden peer" checked>
+                <div class="aspect-square rounded-2xl bg-synapse-card border-2 border-gray-700 peer-checked:border-synapse-accent peer-checked:bg-synapse-accent/10 hover:border-gray-500 transition-all p-4 flex flex-col items-center justify-center shadow-lg">
+                    <img src="https://api.dicebear.com/7.x/bottts/svg?seed={{ request.user.username }}" class="w-full h-full mb-3" alt="AI Robot">
+                    <span class="text-sm font-semibold text-gray-400 peer-checked:text-synapse-accent transition">AI Robot</span>
+                </div>
+            </label>
 
-            <div
-                class="absolute inset-0 bg-black/0 group-hover:bg-black/30 rounded-lg pointer-events-none transition-all">
-            </div>
+            <label class="group cursor-pointer">
+                <input type="radio" name="avatar_style" value="pixel-art" class="hidden peer">
+                <div class="aspect-square rounded-2xl bg-synapse-card border-2 border-gray-700 peer-checked:border-synapse-accent peer-checked:bg-synapse-accent/10 hover:border-gray-500 transition-all p-4 flex flex-col items-center justify-center shadow-lg">
+                    <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed={{ request.user.username }}" class="w-full h-full mb-3" alt="Pixel Art">
+                    <span class="text-sm font-semibold text-gray-400 peer-checked:text-synapse-accent transition">Pixel Art</span>
+                </div>
+            </label>
 
-            <div class="check-icon absolute top-2 right-2 bg-cyan-500 rounded-full p-1 opacity-0 transition-opacity">
-                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
-                </svg>
+            <label class="group cursor-pointer">
+                <input type="radio" name="avatar_style" value="identicon" class="hidden peer">
+                <div class="aspect-square rounded-2xl bg-synapse-card border-2 border-gray-700 peer-checked:border-synapse-accent peer-checked:bg-synapse-accent/10 hover:border-gray-500 transition-all p-4 flex flex-col items-center justify-center shadow-lg">
+                    <img src="https://api.dicebear.com/7.x/identicon/svg?seed={{ request.user.username }}" class="w-full h-full mb-3" alt="Geometric">
+                    <span class="text-sm font-semibold text-gray-400 peer-checked:text-synapse-accent transition">Geometric</span>
+                </div>
+            </label>
+
+            <label class="group cursor-pointer">
+                <input type="radio" name="avatar_style" value="shapes" class="hidden peer">
+                <div class="aspect-square rounded-2xl bg-synapse-card border-2 border-gray-700 peer-checked:border-synapse-accent peer-checked:bg-synapse-accent/10 hover:border-gray-500 transition-all p-4 flex flex-col items-center justify-center shadow-lg">
+                    <img src="https://api.dicebear.com/7.x/shapes/svg?seed={{ request.user.username }}" class="w-full h-full mb-3" alt="Abstract">
+                    <span class="text-sm font-semibold text-gray-400 peer-checked:text-synapse-accent transition">Abstract</span>
+                </div>
+            </label>
+        </div>
+
+        <div class="flex justify-center">
+            <button onclick="goToStep2()" class="bg-synapse-accent text-white px-12 py-4 rounded font-bold hover:brightness-110 transition shadow-[0_0_15px_rgba(14,165,233,0.4)] text-lg">
+                Next
+            </button>
+        </div>
+    </section>
+
+    <section id="step2-container" class="hidden opacity-0 translate-x-10 transition-all duration-500 transform">
+        <div class="max-w-6xl mx-auto text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Customize your experience</h1>
+            <p class="text-gray-400 text-lg">Select at least 3 movies (maximum 10) to train your recommender.</p>
+
+            <div id="counter-badge" class="mt-4 inline-block bg-synapse-accent px-4 py-1 rounded-full text-sm font-bold opacity-0 transition-opacity">
+                <span id="selected-count">0</span> selected
             </div>
         </div>
-        {% endfor %}
-    </div>
 
-    <div
-        class="fixed bottom-0 left-0 w-full bg-gradient-to-t from-black via-black/90 to-transparent p-8 flex justify-center space-x-4 z-50">
-        <button onclick="skipOnboarding()"
-            class="px-8 py-3 bg-gray-800 hover:bg-gray-700 rounded-full font-bold transition">Skip for now</button>
-        <button id="btn-continue" disabled onclick="submitOnboarding()"
-            class="px-12 py-3 bg-cyan-500 hover:bg-cyan-700 disabled:bg-gray-600 disabled:cursor-not-allowed rounded-full font-bold transition">Start watching</button>
+        <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4" id="movie-grid">
+            {% for movie in movies %}
+            <div class="movie-card relative cursor-pointer group transition-all duration-500 transform {% if forloop.counter > 18 %}hidden reserve-movie{% endif %}"
+                data-id="{{ movie.id }}" onclick="toggleSelect(this)">
+                <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" class="rounded-lg border-4 border-transparent w-full h-full object-cover shadow-lg">
+                <div class="absolute inset-0 bg-synapse-bg/0 group-hover:bg-synapse-bg/40 rounded-lg pointer-events-none transition-all"></div>
+                <div class="check-icon absolute top-2 right-2 bg-synapse-accent rounded-full p-1 opacity-0 transition-opacity shadow-lg">
+                    <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <div id="bottom-bar" class="fixed bottom-0 left-0 w-full bg-gradient-to-t from-synapse-bg via-synapse-bg/90 to-transparent p-8 flex justify-center space-x-4 z-50 hidden opacity-0 transition-opacity duration-500">
+        <button onclick="skipOnboarding()" class="px-8 py-3 border-2 border-gray-600 hover:bg-gray-800 text-white rounded font-bold transition">
+            Skip
+        </button>
+        <button onclick="refreshMovies()" class="px-8 py-3 bg-synapse-card border-2 border-synapse-accent text-synapse-accent hover:bg-synapse-accent/10 rounded font-bold transition flex items-center space-x-2 shadow-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <span>Refresh</span>
+        </button>
+        <button id="btn-continue" disabled onclick="submitOnboarding()" class="px-12 py-3 bg-synapse-accent hover:brightness-110 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed rounded font-bold transition shadow-lg">
+            Start watching
+        </button>
     </div>
 </div>
 
 <style>
     .movie-card.selected img {
-        border-color: #06B6D4;
+        border-color: var(--accent-color, #0ea5e9);
         transform: scale(0.95);
-        opacity: 0.8;
+        opacity: 0.7;
     }
-
     .movie-card.selected .check-icon {
         opacity: 1;
     }
 </style>
 
 <script>
+    function goToStep2() {
+        const s1 = document.getElementById('step1-container');
+        const s2 = document.getElementById('step2-container');
+        const bBar = document.getElementById('bottom-bar');
+        
+        const ind1 = document.getElementById('step1-indicator');
+        const ind2 = document.getElementById('step2-indicator');
+        const div = document.getElementById('step-divider');
+
+        s1.classList.add('opacity-0', '-translate-x-10');
+        
+        setTimeout(() => {
+            s1.classList.add('hidden');        
+            s2.classList.remove('hidden');
+            bBar.classList.remove('hidden');
+            
+            void s2.offsetWidth; 
+            
+            s2.classList.remove('opacity-0', 'translate-x-10');
+            bBar.classList.remove('opacity-0');
+            
+            ind1.classList.remove('shadow-[0_0_15px_rgba(14,165,233,0.5)]');
+            ind2.classList.remove('bg-gray-800', 'text-gray-500');
+            ind2.classList.add('bg-synapse-accent', 'text-white', 'shadow-[0_0_15px_rgba(14,165,233,0.5)]');
+            div.classList.replace('bg-gray-700', 'bg-synapse-accent');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 500);
+    }
+
     let selectedIds = [];
     const MAX_SELECTIONS = 10;
     const MIN_SELECTIONS = 3;
@@ -93,14 +177,11 @@
     }
 
     function showNextAvailableMovie() {
-        // Busca la primera película en reserva y la muestra
         const reserveMovies = document.querySelectorAll('.reserve-movie');
         for (let i = 0; i < reserveMovies.length; i++) {
             if (reserveMovies[i].classList.contains('hidden')) {
                 reserveMovies[i].classList.remove('hidden');
                 reserveMovies[i].style.opacity = '0';
-
-                // Efecto Fade in
                 setTimeout(() => {
                     reserveMovies[i].style.transition = 'opacity 0.5s ease-in';
                     reserveMovies[i].style.opacity = '1';
@@ -116,10 +197,10 @@
         const countSpan = document.getElementById('selected-count');
 
         if (selectedIds.length === MAX_SELECTIONS) {
-            badge.classList.replace('bg-cyan-500', 'bg-green-600');
-            countSpan.innerText = "¡Máximo (10) alcanzado!";
+            badge.classList.replace('bg-synapse-accent', 'bg-green-500');
+            countSpan.innerText = "Maximum (10) reached!";
         } else {
-            badge.classList.replace('bg-green-600', 'bg-cyan-500');
+            badge.classList.replace('bg-green-500', 'bg-synapse-accent');
             countSpan.innerText = selectedIds.length;
         }
 
@@ -129,8 +210,11 @@
 
     async function submitOnboarding() {
         const btn = document.getElementById('btn-continue');
-        btn.innerText = "Loading...";
+        btn.innerText = "Loading Synapse...";
         btn.disabled = true;
+
+       
+        const selectedAvatar = document.querySelector('input[name="avatar_style"]:checked').value;
 
         const response = await fetch("{% url 'onboarding' %}", {
             method: 'POST',
@@ -138,23 +222,67 @@
                 'Content-Type': 'application/json',
                 'X-CSRFToken': csrfToken
             },
-            body: JSON.stringify({ action: 'submit', movie_ids: selectedIds })
+            body: JSON.stringify({ 
+                action: 'submit', 
+                movie_ids: selectedIds,
+                avatar_style: selectedAvatar
+            })
+        });
+        
+        const data = await response.json();
+        if (data.status === 'success') {
+            window.location.href = "/";
+        } else {
+            btn.innerText = "Start watching";
+            btn.disabled = false;
+            alert("Error: " + data.message);
+        }
+    }
+
+    async function skipOnboarding() {
+        const selectedAvatar = document.querySelector('input[name="avatar_style"]:checked').value;
+        
+        const response = await fetch("{% url 'onboarding' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({ 
+                action: 'skip',
+                avatar_style: selectedAvatar 
+            })
         });
         const data = await response.json();
         if (data.status === 'success') window.location.href = data.redirect;
     }
 
-    async function skipOnboarding() {
-        const response = await fetch("{% url 'onboarding' %}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': csrfToken
-            },
-            body: JSON.stringify({ action: 'skip' })
+    function refreshMovies() {
+        const visibleMovies = document.querySelectorAll('.movie-card:not(.hidden):not(.selected)');
+        const reserveMovies = document.querySelectorAll('.reserve-movie');
+
+        if (reserveMovies.length === 0) {
+            alert("No more movies available right now. Please pick from the current list!");
+            return;
+        }
+
+        visibleMovies.forEach(card => {
+            card.classList.add('hidden');
+            card.style.opacity = '0';
+            card.classList.add('reserve-movie'); 
         });
-        const data = await response.json();
-        if (data.status === 'success') window.location.href = data.redirect;
+
+        let count = 0;
+        reserveMovies.forEach(card => {
+            if (count < 18) {
+                card.classList.remove('hidden', 'reserve-movie');
+                setTimeout(() => {
+                    card.style.transition = 'opacity 0.5s ease-in';
+                    card.style.opacity = '1';
+                }, 50);
+                count++;
+            }
+        });
     }
 </script>
 {% endblock %}

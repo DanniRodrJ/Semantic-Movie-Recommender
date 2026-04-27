@@ -123,7 +123,7 @@ class UserProfile(models.Model):
         return f"https://api.dicebear.com/7.x/{self.avatar_style}/svg?seed={self.user.username}"
 
     def update_preference_vector(self):
-        """Calculate the centroid by combining Favorites (+3), History (+1) and Dislikes (-2)"""
+        """Calculate the centroid by combining Favorites (+2), History (+0.5) and Dislikes (-0.5)"""
         vectors = []
         weights = []
 
@@ -132,7 +132,7 @@ class UserProfile(models.Model):
         fav_ids = set()
         for movie in fav_movies:
             vectors.append(np.array(movie.embedding))
-            weights.append(3.0) # Triple Weight
+            weights.append(2.0) # Double Weight
             fav_ids.add(movie.id)
 
         # 2. History (limit to the last 50 to not drag old tastes)
@@ -146,14 +146,17 @@ class UserProfile(models.Model):
             # Only add if not in favorites (to avoid duplicate calculations)
             if item.movie.id not in fav_ids:
                 vectors.append(np.array(item.movie.embedding))
-                weights.append(1.0) # Normal weight
+                weights.append(0.5) # Half weight
                 history_ids.add(item.movie.id)
                 
+        has_positive_anchors = len(vectors) > 0
+                
         # 3. Dislikes
-        dislikes = self.disliked_movies.filter(embedding__isnull=False)
-        for movie in dislikes:
-            vectors.append(np.array(movie.embedding))
-            weights.append(-2.0)
+        if has_positive_anchors:
+            dislikes = self.disliked_movies.filter(embedding__isnull=False)
+            for movie in dislikes:
+                vectors.append(np.array(movie.embedding))
+                weights.append(-0.5)
 
         # 3. Vector math
         if vectors:

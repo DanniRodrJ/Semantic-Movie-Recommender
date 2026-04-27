@@ -9,14 +9,23 @@
 
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
             {% for movie in movies %}
-                <div class="cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg"
-                     data-slug="{{ movie.slug }}" data-id="{{ movie.id }}" data-title="{{ movie.title }}"
-                     data-description="{{ movie.overview|truncatewords:60 }}" data-year="{{ movie.release_date.year|default:'N/A' }}"
-                     data-genre="{% if movie.genres %}{{ movie.genres.0.name }}{% else %}N/A{% endif %}"
+                <div class="movie-card relative cursor-pointer group transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg"
+                     data-slug="{{ movie.slug }}" data-id="{{ movie.id }}" data-title="{{ movie.title|force_escape }}"
+                     data-description="{{ movie.overview|truncatewords:60|force_escape }}" data-year="{{ movie.release_date.year|default:'N/A' }}"
+                     data-genre="{% if movie_genre %}{{ movie_genre }}{% elif movie.genres %}{{ movie.genres.0.name }}{% else %}N/A{% endif %}"
+                     
+                     data-rating="{{ movie.vote_average|default:'N/A' }}"
+                     data-duration="{{ movie.runtime|default:'N/A' }}"
+                     
                      data-poster="{{ movie.poster_url|default:'' }}" data-backdrop="{{ movie.backdrop_url|default:'' }}"
                      data-play-url="{% url 'movie_detail' movie.slug %}" onclick="showModal(this)"
                      style="background-image: url('{{ movie.poster_url }}'); background-size: cover; background-position: center; aspect-ratio: 2/3;">
-                    <div class="w-full h-full bg-gradient-to-t from-black/70 to-transparent flex items-end p-3">
+                    
+                    <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-synapse-card text-white text-xs rounded opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-20 border border-gray-700 shadow-lg">
+                        ⭐ {{ movie.vote_average|default:'N/A' }} • {{ movie.release_date.year|default:'N/A' }}
+                    </div>
+                    
+                    <div class="w-full h-full bg-gradient-to-t from-synapse-bg/95 via-synapse-bg/40 to-transparent flex items-end p-3 relative">
                         <p class="text-white text-sm font-semibold truncate w-full">{{ movie.title }}</p>
                     </div>
                 </div>

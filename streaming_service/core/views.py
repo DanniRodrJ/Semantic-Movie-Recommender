@@ -23,6 +23,9 @@ class HomeView(LoginRequiredMixin, list.ListView):
     login_url = 'login'
 
     def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return self.handle_no_permission()
+        
         profile, created = UserProfile.objects.get_or_create(user=request.user)
         if not profile.has_completed_onboarding:
             return redirect('onboarding')
@@ -99,6 +102,13 @@ class HomeView(LoginRequiredMixin, list.ListView):
                 
         context['continue_watching'] = continue_watching
         
+        # Vote Record for the Modal
+        context['liked_ids'] = [m_id for m_id in self.request.user.favorite_movies.values_list('id', flat=True)]
+        if hasattr(self.request.user, 'profile'):
+            context['disliked_ids'] = [m_id for m_id in self.request.user.profile.disliked_movies.values_list('id', flat=True)]
+        else:
+            context['disliked_ids'] = []
+        
         return context
     
     
@@ -119,6 +129,12 @@ class PersonalizedMoviesView(LoginRequiredMixin, list.ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = '✨ Recommended for you'
+        context['liked_ids'] = [m_id for m_id in self.request.user.favorite_movies.values_list('id', flat=True)]
+        
+        if hasattr(self.request.user, 'profile'):
+            context['disliked_ids'] = [m_id for m_id in self.request.user.profile.disliked_movies.values_list('id', flat=True)]
+        else:
+            context['disliked_ids'] = []
         return context
     
 
@@ -135,6 +151,13 @@ class PopularMoviesView(LoginRequiredMixin, list.ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = '🔥 Most Popular Movies'
+        context['liked_ids'] = [m_id for m_id in self.request.user.favorite_movies.values_list('id', flat=True)]
+        
+        if hasattr(self.request.user, 'profile'):
+            context['disliked_ids'] = [m_id for m_id in self.request.user.profile.disliked_movies.values_list('id', flat=True)]
+        else:
+            context['disliked_ids'] = []
+            
         return context
 
 
@@ -189,6 +212,12 @@ class GenreListView(LoginRequiredMixin, list.ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['movie_genre'] = self.kwargs.get('genre').title()
+        context['liked_ids'] = [m_id for m_id in self.request.user.favorite_movies.values_list('id', flat=True)]
+        
+        if hasattr(self.request.user, 'profile'):
+            context['disliked_ids'] = [m_id for m_id in self.request.user.profile.disliked_movies.values_list('id', flat=True)]
+        else:
+            context['disliked_ids'] = []
         return context
 
 
@@ -253,6 +282,12 @@ class SearchView(LoginRequiredMixin, list.ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['search_term'] = self.request.GET.get('q', '')
+        context['liked_ids'] = [m_id for m_id in self.request.user.favorite_movies.values_list('id', flat=True)]
+        
+        if hasattr(self.request.user, 'profile'):
+            context['disliked_ids'] = [m_id for m_id in self.request.user.profile.disliked_movies.values_list('id', flat=True)]
+        else:
+            context['disliked_ids'] = []
         return context
 
 
@@ -264,6 +299,15 @@ class MyListView(LoginRequiredMixin, list.ListView):
 
     def get_queryset(self):
         return self.request.user.favorite_movies.order_by('-popularity')
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['liked_ids'] = [m_id for m_id in self.request.user.favorite_movies.values_list('id', flat=True)]
+        if hasattr(self.request.user, 'profile'):
+            context['disliked_ids'] = [m_id for m_id in self.request.user.profile.disliked_movies.values_list('id', flat=True)]
+        else:
+            context['disliked_ids'] = []
+        return context
 
 
 class ToggleFavoriteView(LoginRequiredMixin, base.View):
@@ -364,12 +408,13 @@ class OnboardingView(LoginRequiredMixin, list.ListView):
     login_url = 'login'
 
     def get_queryset(self):
-        return Movie.objects.filter(embedding__isnull=False).order_by('?')[:40]
+        return Movie.objects.filter(embedding__isnull=False).order_by('?')[:60]
 
     def post(self, request, *args, **kwargs):
         try:
             data = json.loads(request.body)
             action = data.get('action', 'submit')
+            avatar_style = data.get('avatar_style', 'bottts')
 
             profile, _ = UserProfile.objects.get_or_create(user=request.user)
             if action == 'skip':
@@ -385,14 +430,12 @@ class OnboardingView(LoginRequiredMixin, list.ListView):
                 if vectors:
                     # The centroid (average of the vectors) is calculated
                     centroid = np.mean(vectors, axis=0)
-
-                    # The user's profile is updated with the centroid
-                    profile, _ = UserProfile.objects.get_or_create(user=request.user)
                     profile.preference_vector = centroid.tolist()
-                    profile.has_completed_onboarding = True
-                    profile.save()
+                    
+                profile.has_completed_onboarding = True
+                profile.save()
 
-                    return JsonResponse({'status': 'success', 'redirect': '/'})
+                return JsonResponse({'status': 'success', ' redirect': '/'})
             return JsonResponse({'status': 'error', 'message': 'No movies selected'}, status=400)
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
@@ -414,17 +457,17 @@ class FeedbackView(LoginRequiredMixin, base.View):
             profile = request.user.profile
             
             if vote == 'up':
-                # Pulgar arriba = A la lista de favoritos (+3 peso)
+                # Thumbs up = Add to favorites list (+3 weight)
                 request.user.favorite_movies.add(movie)
                 profile.disliked_movies.remove(movie)
-                action_msg = "¡Agregado a tus gustos!"
+                action_msg = "Added to your favorites!"
             else:
-                # Pulgar abajo = A la lista de dislikes (-2 peso)
+                # Thumbs down = Add to dislikes list (-2 weight)
                 profile.disliked_movies.add(movie)
                 request.user.favorite_movies.remove(movie)
-                action_msg = "Recomendación descartada."
+                action_msg = "Recommendation discarded."
 
-            # Disparamos la actualización del vector matemático
+            # Update the mathematical vector
             profile.update_preference_vector()
             
             return JsonResponse({'status': 'success', 'message': action_msg})

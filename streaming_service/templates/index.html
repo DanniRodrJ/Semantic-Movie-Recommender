@@ -148,6 +148,8 @@
             data-poster="{{ movie.poster_url|default:'' }}" 
             data-backdrop="{{ movie.backdrop_url|default:'' }}"
             data-play-url="{% url 'movie_detail' movie.slug %}" 
+            data-duration="{{ movie.runtime|default:'N/A' }}"
+            data-vote="{% if movie.id in liked_ids %}up{% elif movie.id in disliked_ids %}down{% else %}none{% endif %}"
             onclick="showModal(this)"
             style="background-image: url('{{ movie.backdrop_url|default:movie.poster_url }}'); background-size: cover; background-position: center; height: 140px;">
             <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-synapse-card text-white text-xs rounded opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-20">
@@ -196,7 +198,9 @@
             data-rating="{{ movie.vote_average|default:'N/A' }}"
             data-poster="{{ movie.poster_url|default:'' }}" 
             data-backdrop="{{ movie.backdrop_url|default:'' }}"
+            data-duration="{{ movie.runtime|default:'N/A' }}"
             data-play-url="{% url 'movie_detail' movie.slug %}" 
+            data-vote="{% if movie.id in liked_ids %}up{% elif movie.id in disliked_ids %}down{% else %}none{% endif %}"
             onclick="showModal(this)"
             style="background-image: url('{{ movie.poster_url }}'); background-size: cover; background-position: center; height: 240px;">
             <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-synapse-card text-white text-xs rounded opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-20">
@@ -232,6 +236,8 @@
             data-rating="{{ movie.vote_average|default:'N/A' }}"
             data-poster="{{ movie.poster_url|default:'' }}" data-backdrop="{{ movie.backdrop_url|default:'' }}"
             data-play-url="{% url 'movie_detail' movie.slug %}" onclick="showModal(this)" 
+            data-duration="{{ movie.runtime|default:'N/A' }}"
+            data-vote="{% if movie.id in liked_ids %}up{% elif movie.id in disliked_ids %}down{% else %}none{% endif %}"
             style="background-image: url('{{ movie.poster_url }}'); background-size: cover; background-position: center; height: 240px;">
             <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-synapse-card text-white text-xs rounded opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-20">
                 ⭐ {{ movie.vote_average|default:'N/A' }} • {{ movie.release_date.year|default:'N/A' }}
@@ -259,13 +265,15 @@
 
     <div class="flex overflow-x-auto space-x-4 pb-4 snap-x snap-mandatory custom-scroll">
         {% for movie in movies %}
-        <div class="movie-cardsnap-start flex-shrink-0 w-40 md:w-48 cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg relative group"
+        <div class="movie-card snap-start flex-shrink-0 w-40 md:w-48 cursor-pointer transition-transform hover:scale-105 rounded-lg overflow-hidden shadow-lg relative group"
             data-slug="{{ movie.slug }}" data-id="{{ movie.id }}" data-title="{{ movie.title }}"
             data-description="{{ movie.overview|truncatewords:60 }}" data-year="{{ movie.release_date.year|default:'N/A' }}" 
             data-genre="{{ genre }}"
             data-rating="{{ movie.vote_average|default:'N/A' }}"
+            data-duration="{{ movie.runtime|default:'N/A' }}"
             data-poster="{{ movie.poster_url|default:'' }}" data-backdrop="{{ movie.backdrop_url|default:'' }}"
-            data-play-url="{% url 'movie_detail' movie.slug %}" onclick="showModal(this)" 
+            data-play-url="{% url 'movie_detail' movie.slug %}" onclick="showModal(this)"
+            data-vote="{% if movie.id in liked_ids %}up{% elif movie.id in disliked_ids %}down{% else %}none{% endif %}" 
             style="background-image: url('{{ movie.poster_url }}'); background-size: cover; background-position: center; height: 240px;">
             <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-synapse-card text-white text-xs rounded opacity-0 group-hover:opacity-100 transition pointer-events-none whitespace-nowrap z-20">
                 ⭐ {{ movie.vote_average|default:'N/A' }} • {{ movie.release_date.year|default:'N/A' }}
