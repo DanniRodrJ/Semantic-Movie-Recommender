@@ -1,5 +1,7 @@
 # ```Synapse: Enterprise-Grade Semantic Movie Recommender 🧠🍿```
 
+![image](/streaming_service/static/assets/images/image1.png)
+
 An AI-powered, full-stack movie recommendation engine built with Django. Synapse goes beyond keyword matching by utilizing Multimodal Embeddings (Text + Images), Reciprocal Rank Fusion (RRF), and a highly optimized Vector Database (PostgreSQL + pgvector) to deliver true semantic search capabilities.
 
 ## ```🏗️ System Architecture```
@@ -87,6 +89,7 @@ This project uses Docker Compose for a seamless, one-click environment setup.
     ```bash
     cp .env.example .env
     ```
+
     (Required: TMDB API Key, Gemini API Key, Supabase/PostgreSQL Credentials, Sentry DSN, Telegram Bot keys).   
 
 3. Build and Run: Spin up the Web Server, Redis Broker, and Celery Workers.
@@ -97,4 +100,24 @@ This project uses Docker Compose for a seamless, one-click environment setup.
 
 4. Access the application: 
    - Web Interface: http://localhost:8050
-   - Django Admin (FinOps & Token Monitoring): http://localhost:8050/admin
+
+## 📜 ```License```
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 👩‍💻 ```Developer```
+
+If you would like to contact me, simply click on my name, and you will be redirected to my LinkedIn profile. I would be delighted 🤗 to answer your questions and share more details about my skills and experience.
+
+<div align="center">
+
+*AI Engineer*
+| [<img src="https://avatars.githubusercontent.com/u/123108361?v=4" width=115><br><sub>Danniela Rodríguez</sub>](https://www.linkedin.com/in/danniela-rodriguez-jove-/)
+| :---: |
+
+<div align="left">
+
+## 🙌 ```Acknowledgements and Updates```
+
+*Thank you for reviewing this project* 🤗! *If you would like to stay informed about future updates, please star the repository* ⭐. *You can find the option to do so at the top right of the page. Your support is greatly appreciated.*
+   
