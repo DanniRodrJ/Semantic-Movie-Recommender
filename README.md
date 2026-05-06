@@ -1,4 +1,4 @@
-# ```Synapse: Enterprise-Grade Semantic Movie Recommender 🧠🍿```
+# ```Synapse: Multimodal AI Recommendation Engine & Hybrid Search 🧠🍿```
 
 ![image](/streaming_service/static/assets/images/image1.png)
 
@@ -7,36 +7,34 @@ An AI-powered, full-stack movie recommendation engine built with Django. Synapse
 ## ```🏗️ System Architecture```
 
 ```mermaid
-graph TD
-    %% User Interaction
-    Client([User Browser]) <-->|HTTP/JSON| Uvicorn[Django Web Server]
-    
-    %% Core Backend
-    Uvicorn <-->|Hybrid Search & RRF| DB[(PostgreSQL + pgvector)]
-    
-    %% Async MLOps Pipeline
-    Cron[Celery Beat] -->|Triggers Weekly| Redis[Redis Broker]
-    Redis -->|Task Queue| Worker[Celery Worker]
-    
-    %% Worker External Calls
-    Worker -->|1. Fetch Metadata| TMDB[TMDB API]
-    Worker -->|2. Generate Embeddings| Gemini[Gemini Embedding 2 Preview]
-    Worker -->|3. Upsert Data & Vectors| DB
-    
-    %% Observability
-    Worker -->|Success/Error Alerts| Telegram[Telegram Bot]
-    Uvicorn -->|Error Tracking| Sentry[Sentry.io]
-    
-    %% Styling
+graph LR
+    subgraph "Real-Time Inference & User Flow"
+        User([Client Browser]) -->|Search / Explicit Feedback| Web[Django ASGI Server]
+        Web <-->|RRF Search & Rocchio Recalculation| DB[(PostgreSQL + pgvector)]
+    end
+
+    subgraph "Asynchronous ETL & MLOps Pipeline"
+        Beat[Celery Beat] -->|Weekly Trigger| Broker[Redis Broker]
+        Broker -->|Task Queue| Worker[Celery Worker]
+        Worker -->|1. Fetch Data| TMDB[TMDB API]
+        Worker -->|2. Generate Vectors| Gemini[Gemini Embedding 2]
+        Worker -->|3. Upsert| DB
+    end
+
+    subgraph "Observability & Alerting"
+        Web -.->|Exception Stack Traces| Sentry[Sentry.io]
+        Worker -.->|Critical Execution Alerts| Telegram[Telegram Bot]
+    end
+
     classDef primary fill:#1f2937,stroke:#3b82f6,stroke-width:2px,color:#fff;
     classDef secondary fill:#374151,stroke:#10b981,stroke-width:2px,color:#fff;
     classDef ai fill:#4b5563,stroke:#8b5cf6,stroke-width:2px,color:#fff;
-    classDef external fill:#111827,stroke:#ef4444,stroke-width:2px,color:#fff;
+    classDef alert fill:#7f1d1d,stroke:#ef4444,stroke-width:2px,color:#fff;
 
-    class Uvicorn,Cron,Worker primary;
-    class DB,Redis secondary;
+    class Web,Worker,Beat primary;
+    class DB,Broker secondary;
     class Gemini ai;
-    class TMDB,Telegram,Sentry external;
+    class Sentry,Telegram alert;
 ```
 
 ## ```🚀 Key Technical Features```
